@@ -3,8 +3,11 @@ extends Node2D
 var time_left := 15
 var game_active := false
 
-var enemy_speed := 180.0
-var enemy2_speed := 220.0
+var base_enemy_speed := 180.0
+var base_enemy2_speed := 220.0
+
+var enemy_speed := base_enemy_speed
+var enemy2_speed := base_enemy2_speed
 var enemy2_active := false
 
 @onready var time_label = $CanvasLayer/UIBox/TimeLabel
@@ -34,6 +37,9 @@ func start_game():
 	time_left = 15
 	game_active = true
 	enemy2_active = false
+	
+	enemy_speed = base_enemy_speed
+	enemy2_speed = base_enemy2_speed
 
 	player.visible = true
 	enemy.visible = true
@@ -69,6 +75,13 @@ func move_enemy(delta):
 func move_enemy2(delta):
 	var direction = (player.global_position - enemy2.global_position).normalized()
 	enemy2.global_position += direction * enemy2_speed * delta
+	
+
+func increase_difficulty():
+	enemy_speed += 20.0
+
+	if enemy2_active:
+		enemy2_speed += 25.0	
 
 func check_enemy_collision():
 	if player.global_position.distance_to(enemy.global_position) < 30:
@@ -90,6 +103,9 @@ func _on_game_timer_timeout():
 
 	time_left -= 1
 	update_ui()
+	
+	if time_left == 12 or time_left == 9 or time_left == 6 or time_left == 3:
+		increase_difficulty()
 
 	if time_left == 8 and not enemy2_active:
 		activate_enemy2()
