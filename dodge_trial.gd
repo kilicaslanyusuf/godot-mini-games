@@ -1,5 +1,6 @@
 extends Node2D
 
+var rng := RandomNumberGenerator.new()
 var time_left := 15
 var game_active := false
 
@@ -18,6 +19,7 @@ var enemy2_active := false
 @onready var game_timer = $GameTimer
 
 func _ready():
+	rng.randomize()
 	show_start_screen()
 
 func show_start_screen():
@@ -45,9 +47,11 @@ func start_game():
 	enemy.visible = true
 	enemy2.visible = false
 
-	player.global_position = Vector2(200, 200)
-	enemy.global_position = Vector2(900, 500)
-	enemy2.global_position = Vector2(150, 500)
+	var size = get_viewport_rect().size
+	
+	player.global_position = size / 2
+	enemy.global_position = get_random_edge_position()
+	enemy2.global_position = get_random_edge_position()
 
 	update_ui()
 	status_label.text = "Kaç!"
@@ -55,6 +59,21 @@ func start_game():
 
 func update_ui():
 	time_label.text = "Süre: %d" % time_left
+	
+func get_random_edge_position() -> Vector2:
+	var size = get_viewport_rect().size
+	var margin = 40.0
+	var side = rng.randi_range(0, 3)
+
+	match side:
+		0:
+			return Vector2(rng.randi_range(int(margin), int(size.x - margin)), margin)
+		1:
+			return Vector2(size.x - margin, rng.randi_range(int(margin), int(size.y - margin)))
+		2:
+			return Vector2(rng.randi_range(int(margin), int(size.x - margin)), size.y - margin)
+		_:
+			return Vector2(margin, rng.randi_range(int(margin), int(size.y - margin)))
 
 func _physics_process(delta):
 	if Input.is_action_just_pressed("ui_accept") and not game_active:
@@ -94,7 +113,7 @@ func check_enemy_collision():
 func activate_enemy2():
 	enemy2_active = true
 	enemy2.visible = true
-	enemy2.global_position = Vector2(150, 500)
+	enemy2.global_position = get_random_edge_position()
 	status_label.text = "İkinci düşman geldi!"
 
 func _on_game_timer_timeout():
