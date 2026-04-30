@@ -26,6 +26,9 @@ offset_bottom = 40.0
 layout_mode = 2
 text = "Süre: 15"
 
+[node name="BestTimeLabel" type="Label" parent="CanvasLayer/UIBox" unique_id=1229830157]
+layout_mode = 2
+
 [node name="StatusLabel" type="Label" parent="CanvasLayer/UIBox" unique_id=1639720489]
 layout_mode = 2
 text = "Başlamak için Enter"

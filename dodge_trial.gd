@@ -1,5 +1,8 @@
 extends Node2D
 
+var best_survival_time := 0
+var survived_time := 0
+
 var rng := RandomNumberGenerator.new()
 var time_left := 15
 var game_active := false
@@ -17,6 +20,7 @@ var enemy2_active := false
 @onready var enemy = $Enemy
 @onready var enemy2 = $Enemy2
 @onready var game_timer = $GameTimer
+@onready var best_time_label = $CanvasLayer/UIBox/BestTimeLabel
 
 func _ready():
 	rng.randomize()
@@ -24,6 +28,7 @@ func _ready():
 
 func show_start_screen():
 	time_left = 15
+	survived_time = 0
 	game_active = false
 	enemy2_active = false
 	game_timer.stop()
@@ -39,6 +44,7 @@ func start_game():
 	time_left = 15
 	game_active = true
 	enemy2_active = false
+	survived_time = 0
 	
 	enemy_speed = base_enemy_speed
 	enemy2_speed = base_enemy2_speed
@@ -59,6 +65,7 @@ func start_game():
 
 func update_ui():
 	time_label.text = "Süre: %d" % time_left
+	best_time_label.text = "En iyi: %d" % best_survival_time
 	
 func get_random_edge_position() -> Vector2:
 	var size = get_viewport_rect().size
@@ -121,6 +128,7 @@ func _on_game_timer_timeout():
 		return
 
 	time_left -= 1
+	survived_time += 1
 	update_ui()
 	
 	if time_left == 12 or time_left == 9 or time_left == 6 or time_left == 3:
@@ -140,7 +148,12 @@ func finish_game(won: bool):
 	enemy.visible = true
 	enemy2.visible = enemy2_active
 
+	if survived_time > best_survival_time:
+		best_survival_time = survived_time
+
+	update_ui()
+
 	if won:
-		status_label.text = "Kazandın! Enter ile tekrar başla"
+		status_label.text = "Kazandın! Süre: %d | En iyi: %d | Enter ile tekrar başla" % [survived_time, best_survival_time]
 	else:
-		status_label.text = "Yakalandın! Enter ile tekrar başla"
+		status_label.text = "Yakalandın! Süre: %d | En iyi: %d | Enter ile tekrar başla" % [survived_time, best_survival_time]
