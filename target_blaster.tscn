@@ -1,0 +1,59 @@
+[gd_scene format=3 uid="uid://bq0pq6lqubk21"]
+
+[ext_resource type="Script" uid="uid://d05fsixmnj6hf" path="res://blaster_player.gd" id="1_tvono"]
+[ext_resource type="Script" uid="uid://bvc0i4hdixdk2" path="res://target_blaster.gd" id="1_vi1nr"]
+[ext_resource type="Texture2D" uid="uid://dx3iofbmpt48p" path="res://icon.svg" id="2_vi1nr"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_3vtq0"]
+radius = 18.0
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_arvwk"]
+radius = 8.0
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_gc74m"]
+radius = 18.0
+
+[node name="Game" type="Node2D" unique_id=521552613]
+script = ExtResource("1_vi1nr")
+
+[node name="CanvasLayer" type="CanvasLayer" parent="." unique_id=1413489429]
+
+[node name="UIBox" type="VBoxContainer" parent="CanvasLayer" unique_id=1354569516]
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="ScoreLabel" type="Label" parent="CanvasLayer/UIBox" unique_id=2049158411]
+layout_mode = 2
+text = "Skor: 0"
+
+[node name="StatusLabel" type="Label" parent="CanvasLayer/UIBox" unique_id=1743114196]
+layout_mode = 2
+text = "Space ile ateş et"
+
+[node name="Player" type="CharacterBody2D" parent="." unique_id=1758845031]
+position = Vector2(540, 560)
+script = ExtResource("1_tvono")
+
+[node name="Sprite2D" type="Sprite2D" parent="Player" unique_id=527724632]
+texture = ExtResource("2_vi1nr")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Player" unique_id=1712942288]
+shape = SubResource("CircleShape2D_3vtq0")
+
+[node name="Bullet" type="Area2D" parent="." unique_id=1318243492]
+
+[node name="Sprite2D" type="Sprite2D" parent="Bullet" unique_id=359992620]
+scale = Vector2(0.12, 0.12)
+texture = ExtResource("2_vi1nr")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Bullet" unique_id=1946113641]
+shape = SubResource("CircleShape2D_arvwk")
+
+[node name="Target" type="Area2D" parent="." unique_id=449376603]
+
+[node name="Sprite2D" type="Sprite2D" parent="Target" unique_id=206900771]
+modulate = Color(0, 0.7254902, 0, 1)
+texture = ExtResource("2_vi1nr")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Target" unique_id=935853390]
+shape = SubResource("CircleShape2D_gc74m")
