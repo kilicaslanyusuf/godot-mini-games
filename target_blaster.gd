@@ -1,5 +1,8 @@
 extends Node2D
 
+var target_speed := 220.0
+var target_direction := 1.0
+
 var score := 0
 var time_left := 20
 var game_active := false
@@ -56,6 +59,7 @@ func _physics_process(delta):
 	if not game_active:
 		return
 
+	move_target_sideways(delta)
 	handle_shoot()
 	move_bullet(delta)
 	check_hit()
@@ -91,6 +95,18 @@ func check_hit():
 		reset_bullet()
 		move_target()
 
+func move_target_sideways(delta):
+	var size = get_viewport_rect().size
+
+	target.global_position.x += target_direction * target_speed * delta
+
+	if target.global_position.x <= 220:
+		target.global_position.x = 220
+		target_direction = 1.0
+	elif target.global_position.x >= size.x - 220:
+		target.global_position.x = size.x - 220
+		target_direction = -1.0
+
 func move_target():
 	var size = get_viewport_rect().size
 	target.visible = true
@@ -98,6 +114,16 @@ func move_target():
 		rng.randi_range(220, int(size.x) - 220),
 		120
 	)
+
+	if rng.randi_range(0, 1) == 0:
+		target_direction = -1.0
+	else:
+		target_direction = 1.0
+
+	if game_active:
+		status_label.text = "Space ile ateş et"
+	
+	target_direction = 1.0
 
 func reset_bullet():
 	bullet_active = false
