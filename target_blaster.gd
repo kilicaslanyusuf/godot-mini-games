@@ -1,5 +1,8 @@
 extends Node2D
 
+var misses := 0
+var max_misses := 3
+
 var target_speed := 220.0
 var target_direction := 1.0
 
@@ -18,6 +21,7 @@ var rng := RandomNumberGenerator.new()
 @onready var bullet = $Bullet
 @onready var target = $Target
 @onready var game_timer = $GameTimer
+@onready var miss_label = $CanvasLayer/UIBox/MissLabel
 
 func _ready():
 	rng.randomize()
@@ -28,6 +32,7 @@ func show_start_screen():
 	time_left = 20
 	game_active = false
 	bullet_active = false
+	misses = 0
 
 	player.visible = true
 	target.visible = false
@@ -41,6 +46,7 @@ func start_game():
 	time_left = 20
 	game_active = true
 	bullet_active = false
+	misses = 0
 
 	player.visible = true
 	target.visible = true
@@ -79,7 +85,12 @@ func move_bullet(delta):
 
 	if bullet.global_position.y < -50:
 		reset_bullet()
-		status_label.text = "Kaçırdın"
+		misses += 1
+		update_ui()
+		status_label.text = "Kaçırdın!"
+		
+		if misses >= max_misses:
+			finish_game(false)
 
 func check_hit():
 	if not bullet_active:
@@ -133,6 +144,7 @@ func reset_bullet():
 func update_ui():
 	score_label.text = "Skor: %d" % score
 	time_label.text = "Süre: %d" % time_left
+	miss_label.text = "Kaçırma: %d/%d" % [misses, max_misses]
 
 func _on_game_timer_timeout():
 	if not game_active:
@@ -142,12 +154,16 @@ func _on_game_timer_timeout():
 	update_ui()
 
 	if time_left <= 0:
-		finish_game()
+		finish_game(true)
 
-func finish_game():
+func finish_game(won: bool):
 	game_active = false
 	game_timer.stop()
 	bullet_active = false
 	bullet.visible = false
 	target.visible = false
-	status_label.text = "Süre bitti! Skor: %d | Enter ile tekrar başla" % score
+
+	if won:
+		status_label.text = "Süre bitti! Skor: %d | Enter ile tekrar başla" % score
+	else:
+		status_label.text = "Kaybettin! 3 kaçırma yaptın | Skor: %d | Enter ile tekrar başla" % score

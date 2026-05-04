@@ -30,6 +30,10 @@ text = "Skor: 0"
 layout_mode = 2
 text = "Süre: 20"
 
+[node name="MissLabel" type="Label" parent="CanvasLayer/UIBox" unique_id=111128269]
+layout_mode = 2
+text = "Kaçırma: 0/3"
+
 [node name="StatusLabel" type="Label" parent="CanvasLayer/UIBox" unique_id=1743114196]
 layout_mode = 2
 text = "Space ile ateş et"
