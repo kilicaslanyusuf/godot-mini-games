@@ -3,7 +3,10 @@ extends Node2D
 var misses := 0
 var max_misses := 3
 
-var target_speed := 220.0
+var base_target_speed := 220.0
+var target_speed := base_target_speed
+var speed_step := 20.0
+var max_target_speed := 420.0
 var target_direction := 1.0
 
 var score := 0
@@ -47,6 +50,7 @@ func start_game():
 	game_active = true
 	bullet_active = false
 	misses = 0
+	target_speed = base_target_speed
 
 	player.visible = true
 	target.visible = true
@@ -101,8 +105,9 @@ func check_hit():
 
 	if x_hit and y_hit:
 		score += 1
+		target_speed = min(target_speed + speed_step, max_target_speed)
 		update_ui()
-		status_label.text = "Vurdun!"
+		status_label.text = "Vurdun! Hız arttı"
 		reset_bullet()
 		move_target()
 
