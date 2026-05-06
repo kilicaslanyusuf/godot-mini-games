@@ -1,5 +1,6 @@
 extends Node2D
 
+var best_score := 0
 var misses := 0
 var max_misses := 3
 
@@ -25,6 +26,7 @@ var rng := RandomNumberGenerator.new()
 @onready var target = $Target
 @onready var game_timer = $GameTimer
 @onready var miss_label = $CanvasLayer/UIBox/MissLabel
+@onready var best_score_label = $CanvasLayer/UIBox/BestScoreLabel
 
 func _ready():
 	rng.randomize()
@@ -105,6 +107,8 @@ func check_hit():
 
 	if x_hit and y_hit:
 		score += 1
+		if score > best_score:
+			best_score = score
 		target_speed = min(target_speed + speed_step, max_target_speed)
 		update_ui()
 		status_label.text = "Vurdun! Hız arttı"
@@ -148,6 +152,7 @@ func reset_bullet():
 
 func update_ui():
 	score_label.text = "Skor: %d" % score
+	best_score_label.text = "En iyi: %d" % best_score
 	time_label.text = "Süre: %d" % time_left
 	miss_label.text = "Kaçırma: %d/%d" % [misses, max_misses]
 
@@ -169,6 +174,6 @@ func finish_game(won: bool):
 	target.visible = false
 
 	if won:
-		status_label.text = "Süre bitti! Skor: %d | Enter ile tekrar başla" % score
+		status_label.text = "Süre bitti! Skor: %d | En iyi: %d | Enter ile tekrar başla" % [score, best_score]
 	else:
-		status_label.text = "Kaybettin! 3 kaçırma yaptın | Skor: %d | Enter ile tekrar başla" % score
+		status_label.text = "Kaybettin! Skor: %d | En iyi: %d | Enter ile tekrar başla" % [score, best_score]
