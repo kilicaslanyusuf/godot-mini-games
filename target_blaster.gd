@@ -1,5 +1,6 @@
 extends Node2D
 
+var save_path := "user://target_blaster_save.save"
 var best_score := 0
 var misses := 0
 var max_misses := 3
@@ -30,6 +31,7 @@ var rng := RandomNumberGenerator.new()
 
 func _ready():
 	rng.randomize()
+	load_best_score()
 	show_start_screen()
 
 func show_start_screen():
@@ -109,6 +111,7 @@ func check_hit():
 		score += 1
 		if score > best_score:
 			best_score = score
+			save_best_score()
 		target_speed = min(target_speed + speed_step, max_target_speed)
 		update_ui()
 		status_label.text = "Vurdun! Hız arttı"
@@ -177,3 +180,14 @@ func finish_game(won: bool):
 		status_label.text = "Süre bitti! Skor: %d | En iyi: %d | Enter ile tekrar başla" % [score, best_score]
 	else:
 		status_label.text = "Kaybettin! Skor: %d | En iyi: %d | Enter ile tekrar başla" % [score, best_score]
+		
+func save_best_score():
+	var file = FileAccess.open(save_path, FileAccess.WRITE)
+	if file:
+		file.store_var(best_score)
+
+func load_best_score():
+	if FileAccess.file_exists(save_path):
+		var file = FileAccess.open(save_path, FileAccess.READ)
+		if file:
+			best_score = int(file.get_var())		
