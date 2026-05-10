@@ -23,6 +23,9 @@ var target_speed := base_target_speed
 var speed_step := 20.0
 var max_target_speed := 420.0
 var target_direction := 1.0
+var target_base_scale := Vector2(1.0, 1.0)
+var target_min_scale := Vector2(0.45, 0.45)
+var hit_tolerance := 70.0
 
 @onready var score_label = $CanvasLayer/UIBox/ScoreLabel
 @onready var best_score_label = $CanvasLayer/UIBox/BestScoreLabel
@@ -43,6 +46,7 @@ var target_direction := 1.0
 func _ready():
 	rng.randomize()
 	load_best_score()
+	target_base_scale = target.scale
 	show_start_screen()
 
 func show_start_screen():
@@ -75,6 +79,8 @@ func start_game():
 	shots_fired = 0
 	hits_landed = 0
 	target_speed = base_target_speed
+	target.scale = target_base_scale
+	hit_tolerance = 70.0
 
 	game_timer.stop()
 	combo_timer.stop()
@@ -136,8 +142,8 @@ func check_hit():
 	if not bullet_active:
 		return
 
-	var x_hit = abs(bullet.global_position.x - target.global_position.x) <= 70
-	var y_hit = abs(bullet.global_position.y - target.global_position.y) <= 70
+	var x_hit = abs(bullet.global_position.x - target.global_position.x) <= hit_tolerance
+	var y_hit = abs(bullet.global_position.y - target.global_position.y) <= hit_tolerance
 
 	if x_hit and y_hit:
 		combo_count += 1
@@ -146,6 +152,7 @@ func check_hit():
 		score += gained_points
 		hits_landed += 1
 		target_speed = min(target_speed + speed_step, max_target_speed)
+		update_target_difficulty()
 
 		if score > best_score:
 			best_score = score
@@ -159,6 +166,16 @@ func check_hit():
 
 		reset_bullet()
 		move_target()
+		
+func update_target_difficulty():
+	var shrink_steps = int(score / 5)
+
+	var new_scale_x = max(target_min_scale.x, target_base_scale.x - shrink_steps * 0.08)
+	var new_scale_y = max(target_min_scale.y, target_base_scale.y - shrink_steps * 0.08)
+
+	target.scale = Vector2(new_scale_x, new_scale_y)
+
+	hit_tolerance = max(35.0, 70.0 - shrink_steps * 5.0)
 
 func move_target():
 	var size = get_viewport_rect().size
