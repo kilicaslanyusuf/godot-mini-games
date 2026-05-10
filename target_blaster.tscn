@@ -38,6 +38,14 @@ text = "Süre: 20"
 layout_mode = 2
 text = "Kaçırma: 0/3"
 
+[node name="ShotsLabel" type="Label" parent="CanvasLayer/UIBox" unique_id=1737325779]
+layout_mode = 2
+text = "Atış: 0"
+
+[node name="AccuracyLabel" type="Label" parent="CanvasLayer/UIBox" unique_id=1327518434]
+layout_mode = 2
+text = "İsabet: %0"
+
 [node name="ComboLabel" type="Label" parent="CanvasLayer/UIBox" unique_id=2027069185]
 layout_mode = 2
 text = "Combo: x0"

@@ -1,5 +1,7 @@
 extends Node2D
 
+var shots_fired := 0
+var hits_landed := 0
 var score := 0
 var best_score := 0
 var save_path := "user://target_blaster_save.save"
@@ -35,6 +37,8 @@ var target_direction := 1.0
 
 @onready var game_timer = $GameTimer
 @onready var combo_timer = $ComboTimer
+@onready var shots_label = $CanvasLayer/UIBox/ShotsLabel
+@onready var accuracy_label = $CanvasLayer/UIBox/AccuracyLabel
 
 func _ready():
 	rng.randomize()
@@ -48,6 +52,8 @@ func show_start_screen():
 	bullet_active = false
 	misses = 0
 	combo_count = 0
+	shots_fired = 0
+	hits_landed = 0
 
 	game_timer.stop()
 	combo_timer.stop()
@@ -66,6 +72,8 @@ func start_game():
 	bullet_active = false
 	misses = 0
 	combo_count = 0
+	shots_fired = 0
+	hits_landed = 0
 	target_speed = base_target_speed
 
 	game_timer.stop()
@@ -98,6 +106,8 @@ func handle_shoot():
 		bullet_active = true
 		bullet.visible = true
 		bullet.global_position = player.global_position + Vector2(0, -60)
+		shots_fired += 1
+		update_ui()
 		status_label.text = "Ateş ettin"
 
 func move_bullet(delta):
@@ -134,6 +144,7 @@ func check_hit():
 		var gained_points = combo_count
 
 		score += gained_points
+		hits_landed += 1
 		target_speed = min(target_speed + speed_step, max_target_speed)
 
 		if score > best_score:
@@ -184,6 +195,13 @@ func update_ui():
 	best_score_label.text = "En iyi: %d" % best_score
 	time_label.text = "Süre: %d" % time_left
 	miss_label.text = "Kaçırma: %d/%d" % [misses, max_misses]
+	shots_label.text = "Atış: %d" % shots_fired
+
+	var accuracy := 0
+	if shots_fired > 0:
+		accuracy = int((float(hits_landed) / float(shots_fired)) * 100.0)
+
+	accuracy_label.text = "İsabet: %%%d" % accuracy
 	combo_label.text = "Combo: x%d" % combo_count
 
 func _on_game_timer_timeout():
@@ -210,11 +228,15 @@ func finish_game(won: bool):
 	bullet_active = false
 	bullet.visible = false
 	target.visible = false
+	
+	var accuracy := 0
+	if shots_fired > 0:
+		accuracy = int((float(hits_landed) / float(shots_fired)) * 100.0)
 
 	if won:
-		status_label.text = "Süre bitti! Skor: %d | En iyi: %d | Enter ile tekrar başla" % [score, best_score]
+		status_label.text = "Süre bitti! Skor: %d | İsabet: %%%d | Enter ile tekrar başla" % [score, accuracy]
 	else:
-		status_label.text = "Kaybettin! Skor: %d | En iyi: %d | Enter ile tekrar başla" % [score, best_score]
+		status_label.text = "Kaybettin! Skor: %d | İsabet: %%%d | Enter ile tekrar başla" % [score, accuracy]
 
 func save_best_score():
 	var file = FileAccess.open(save_path, FileAccess.WRITE)
