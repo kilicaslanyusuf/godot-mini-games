@@ -1,0 +1,44 @@
+[gd_scene format=3 uid="uid://ex4yuabfye8v"]
+
+[ext_resource type="Script" uid="uid://ciy1ncgkjtqrb" path="res://brick_break_lite.gd" id="1_7qnpt"]
+[ext_resource type="Script" uid="uid://d0si5arkop67i" path="res://breaker_paddle.gd" id="1_u0j17"]
+[ext_resource type="Texture2D" uid="uid://dx3iofbmpt48p" path="res://icon.svg" id="2_7qnpt"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_f4pop"]
+size = Vector2(140, 28)
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_1lelb"]
+
+[node name="Game" type="Node2D" unique_id=1773688080]
+script = ExtResource("1_7qnpt")
+
+[node name="CanvasLayer" type="CanvasLayer" parent="." unique_id=1850145165]
+
+[node name="UIBox" type="VBoxContainer" parent="CanvasLayer" unique_id=781907023]
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="StatusLabel" type="Label" parent="CanvasLayer/UIBox" unique_id=2018384474]
+layout_mode = 2
+text = "Space ile topu başlat"
+
+[node name="Paddle" type="CharacterBody2D" parent="." unique_id=1592624898]
+position = Vector2(560, 590)
+script = ExtResource("1_u0j17")
+
+[node name="Sprite2D" type="Sprite2D" parent="Paddle" unique_id=1532906257]
+scale = Vector2(0.55, 0.18)
+texture = ExtResource("2_7qnpt")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Paddle" unique_id=999654661]
+shape = SubResource("RectangleShape2D_f4pop")
+
+[node name="Ball" type="Node2D" parent="." unique_id=258542432]
+position = Vector2(560, 545)
+
+[node name="Sprite2D" type="Sprite2D" parent="Ball" unique_id=1024003833]
+scale = Vector2(0.12, 0.12)
+texture = ExtResource("2_7qnpt")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Ball" unique_id=807271989]
+shape = SubResource("CircleShape2D_1lelb")
