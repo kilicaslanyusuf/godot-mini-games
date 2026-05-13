@@ -36,6 +36,10 @@ offset_bottom = 40.0
 layout_mode = 2
 text = "Skor: 0"
 
+[node name="LivesLabel" type="Label" parent="CanvasLayer/UIBox" unique_id=1162784338]
+layout_mode = 2
+text = "Can: 3"
+
 [node name="StatusLabel" type="Label" parent="CanvasLayer/UIBox" unique_id=2018384474]
 layout_mode = 2
 text = "Space ile topu başlat"

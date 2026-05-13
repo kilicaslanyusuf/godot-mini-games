@@ -1,12 +1,17 @@
 extends Node2D
 
-var rng := RandomNumberGenerator.new()
 var ball_speed := 420.0
 var ball_velocity := Vector2.ZERO
 var ball_launched := false
+
 var score := 0
+var lives := 3
+var max_lives := 3
+
+var rng := RandomNumberGenerator.new()
 
 @onready var score_label = $CanvasLayer/UIBox/ScoreLabel
+@onready var lives_label = $CanvasLayer/UIBox/LivesLabel
 @onready var status_label = $CanvasLayer/UIBox/StatusLabel
 
 @onready var paddle = $Paddle
@@ -22,18 +27,19 @@ var score := 0
 
 func _ready():
 	rng.randomize()
-	start_new_round()
+	start_new_game()
 
-func start_new_round():
+func start_new_game():
 	score = 0
+	lives = max_lives
 	reset_bricks()
-	show_start_state()
+	show_start_state("Space ile topu başlat")
 	update_ui()
 
-func show_start_state():
+func show_start_state(message: String = "Space ile topu başlat"):
 	ball_launched = false
 	ball_velocity = Vector2.ZERO
-	status_label.text = "Space ile topu başlat"
+	status_label.text = message
 	reset_ball_on_paddle()
 
 func reset_ball_on_paddle():
@@ -42,6 +48,11 @@ func reset_ball_on_paddle():
 func _physics_process(delta):
 	if not ball_launched:
 		reset_ball_on_paddle()
+
+		if lives <= 0:
+			if Input.is_action_just_pressed("ui_accept"):
+				start_new_game()
+			return
 
 		if Input.is_action_just_pressed("shoot"):
 			launch_ball()
@@ -75,8 +86,13 @@ func move_ball(delta):
 		ball_velocity.y *= -1
 
 	if ball.global_position.y >= size.y + 30:
-		status_label.text = "Kaçtı! Yeni tur başlıyor"
-		start_new_round()
+		lives -= 1
+		update_ui()
+
+		if lives <= 0:
+			game_over()
+		else:
+			show_start_state("Can gitti! Space ile devam")
 
 func check_paddle_bounce():
 	var x_close = abs(ball.global_position.x - paddle.global_position.x) <= 85
@@ -132,5 +148,12 @@ func reset_bricks():
 		brick.get_node("Sprite2D").visible = true
 		brick.global_position = Vector2(start_x + i * gap, row_y)
 
+func game_over():
+	ball_launched = false
+	ball_velocity = Vector2.ZERO
+	reset_ball_on_paddle()
+	status_label.text = "Oyun bitti! Skor: %d | Enter ile yeni oyun" % score
+
 func update_ui():
 	score_label.text = "Skor: %d" % score
+	lives_label.text = "Can: %d" % lives
