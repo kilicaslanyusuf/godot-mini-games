@@ -23,6 +23,21 @@ size = Vector2(75, 24)
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_mxsvx"]
 size = Vector2(75, 24)
 
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_2lkhf"]
+size = Vector2(75, 24)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_g1spy"]
+size = Vector2(75, 24)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_nivb2"]
+size = Vector2(75, 24)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_lg6ta"]
+size = Vector2(75, 24)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_vbjb8"]
+size = Vector2(75, 24)
+
 [node name="Game" type="Node2D" unique_id=1773688080]
 script = ExtResource("1_7qnpt")
 
@@ -118,3 +133,48 @@ texture = ExtResource("2_7qnpt")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Bricks/Brick5" unique_id=1465771844]
 shape = SubResource("RectangleShape2D_mxsvx")
+
+[node name="Brick6" type="Area2D" parent="Bricks" unique_id=723505668]
+
+[node name="Sprite2D" type="Sprite2D" parent="Bricks/Brick6" unique_id=130808012]
+scale = Vector2(0.3, 0.15)
+texture = ExtResource("2_7qnpt")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Bricks/Brick6" unique_id=2142704648]
+shape = SubResource("RectangleShape2D_2lkhf")
+
+[node name="Brick7" type="Area2D" parent="Bricks" unique_id=1761155905]
+
+[node name="Sprite2D" type="Sprite2D" parent="Bricks/Brick7" unique_id=593609834]
+scale = Vector2(0.3, 0.15)
+texture = ExtResource("2_7qnpt")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Bricks/Brick7" unique_id=1293649729]
+shape = SubResource("RectangleShape2D_g1spy")
+
+[node name="Brick8" type="Area2D" parent="Bricks" unique_id=535837614]
+
+[node name="Sprite2D" type="Sprite2D" parent="Bricks/Brick8" unique_id=1373920958]
+scale = Vector2(0.3, 0.15)
+texture = ExtResource("2_7qnpt")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Bricks/Brick8" unique_id=1414856428]
+shape = SubResource("RectangleShape2D_nivb2")
+
+[node name="Brick9" type="Area2D" parent="Bricks" unique_id=1414797826]
+
+[node name="Sprite2D" type="Sprite2D" parent="Bricks/Brick9" unique_id=474924658]
+scale = Vector2(0.3, 0.15)
+texture = ExtResource("2_7qnpt")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Bricks/Brick9" unique_id=1127012267]
+shape = SubResource("RectangleShape2D_lg6ta")
+
+[node name="Brick10" type="Area2D" parent="Bricks" unique_id=28211167]
+
+[node name="Sprite2D" type="Sprite2D" parent="Bricks/Brick10" unique_id=796134544]
+scale = Vector2(0.3, 0.15)
+texture = ExtResource("2_7qnpt")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Bricks/Brick10" unique_id=1167906144]
+shape = SubResource("RectangleShape2D_vbjb8")

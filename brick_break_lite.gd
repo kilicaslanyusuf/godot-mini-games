@@ -23,7 +23,12 @@ var rng := RandomNumberGenerator.new()
 	$Bricks/Brick2,
 	$Bricks/Brick3,
 	$Bricks/Brick4,
-	$Bricks/Brick5
+	$Bricks/Brick5,
+	$Bricks/Brick6,
+	$Bricks/Brick7,
+	$Bricks/Brick8,
+	$Bricks/Brick9,
+	$Bricks/Brick10
 ]
 
 func _ready():
@@ -139,16 +144,25 @@ func all_bricks_broken() -> bool:
 
 func reset_bricks():
 	var size = get_viewport_rect().size
-	var gap = 150.0
-	var total_width = (bricks.size() - 1) * gap
+	var gap_x = 150.0
+	var gap_y = 70.0
+	var cols = 5
+
+	var total_width = (cols - 1) * gap_x
 	var start_x = rng.randi_range(160, int(size.x - 160 - total_width))
-	var row_y = rng.randi_range(120, 200)
+	var start_y = rng.randi_range(110, 170)
 
 	for i in range(bricks.size()):
 		var brick = bricks[i]
+		var row = i / cols
+		var col = i % cols
+
 		brick.visible = true
 		brick.get_node("Sprite2D").visible = true
-		brick.global_position = Vector2(start_x + i * gap, row_y)
+		brick.global_position = Vector2(
+			start_x + col * gap_x,
+			start_y + row * gap_y
+		)
 
 func game_over():
 	game_over_state = true
