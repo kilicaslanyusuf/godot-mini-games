@@ -7,6 +7,7 @@ var ball_launched := false
 var score := 0
 var lives := 3
 var max_lives := 3
+var game_over_state := false
 
 var rng := RandomNumberGenerator.new()
 
@@ -32,6 +33,7 @@ func _ready():
 func start_new_game():
 	score = 0
 	lives = max_lives
+	game_over_state = false
 	reset_bricks()
 	show_start_state("Space ile topu başlat")
 	update_ui()
@@ -46,13 +48,13 @@ func reset_ball_on_paddle():
 	ball.global_position = paddle.global_position + Vector2(0, -45)
 
 func _physics_process(delta):
+	if game_over_state:
+		if Input.is_action_just_pressed("ui_accept"):
+			start_new_game()
+		return
+
 	if not ball_launched:
 		reset_ball_on_paddle()
-
-		if lives <= 0:
-			if Input.is_action_just_pressed("ui_accept"):
-				start_new_game()
-			return
 
 		if Input.is_action_just_pressed("shoot"):
 			launch_ball()
@@ -121,11 +123,11 @@ func check_brick_collision():
 
 			score += 1
 			update_ui()
-			status_label.text = "Tuğla kırıldı!"
 
 			if all_bricks_broken():
-				status_label.text = "Satır temizlendi!"
-				reset_bricks()
+				win_round()
+			else:
+				status_label.text = "Tuğla kırıldı!"
 
 			break
 
@@ -149,10 +151,18 @@ func reset_bricks():
 		brick.global_position = Vector2(start_x + i * gap, row_y)
 
 func game_over():
+	game_over_state = true
 	ball_launched = false
 	ball_velocity = Vector2.ZERO
 	reset_ball_on_paddle()
 	status_label.text = "Oyun bitti! Skor: %d | Enter ile yeni oyun" % score
+
+func win_round():
+	game_over_state = true
+	ball_launched = false
+	ball_velocity = Vector2.ZERO
+	reset_ball_on_paddle()
+	status_label.text = "Kazandın! Skor: %d | Enter ile yeni oyun" % score
 
 func update_ui():
 	score_label.text = "Skor: %d" % score
