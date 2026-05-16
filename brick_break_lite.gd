@@ -1,10 +1,12 @@
 extends Node2D
 
-var ball_speed := 420.0
+var base_ball_speed := 420.0
+var ball_speed := base_ball_speed
 var ball_velocity := Vector2.ZERO
 var ball_launched := false
 
 var score := 0
+var level := 1
 var lives := 3
 var max_lives := 3
 var game_over_state := false
@@ -13,6 +15,7 @@ var rng := RandomNumberGenerator.new()
 
 @onready var score_label = $CanvasLayer/UIBox/ScoreLabel
 @onready var lives_label = $CanvasLayer/UIBox/LivesLabel
+@onready var level_label = $CanvasLayer/UIBox/LevelLabel
 @onready var status_label = $CanvasLayer/UIBox/StatusLabel
 
 @onready var paddle = $Paddle
@@ -37,8 +40,11 @@ func _ready():
 
 func start_new_game():
 	score = 0
+	level = 1
 	lives = max_lives
+	ball_speed = base_ball_speed
 	game_over_state = false
+
 	reset_bricks()
 	show_start_state("Space ile topu başlat")
 	update_ui()
@@ -130,7 +136,7 @@ func check_brick_collision():
 			update_ui()
 
 			if all_bricks_broken():
-				win_round()
+				next_level()
 			else:
 				status_label.text = "Tuğla kırıldı!"
 
@@ -164,20 +170,21 @@ func reset_bricks():
 			start_y + row * gap_y
 		)
 
+func next_level():
+	level += 1
+	ball_speed += 40.0
+	reset_bricks()
+	show_start_state("Seviye %d! Space ile devam" % level)
+	update_ui()
+
 func game_over():
 	game_over_state = true
 	ball_launched = false
 	ball_velocity = Vector2.ZERO
 	reset_ball_on_paddle()
-	status_label.text = "Oyun bitti! Skor: %d | Enter ile yeni oyun" % score
-
-func win_round():
-	game_over_state = true
-	ball_launched = false
-	ball_velocity = Vector2.ZERO
-	reset_ball_on_paddle()
-	status_label.text = "Kazandın! Skor: %d | Enter ile yeni oyun" % score
+	status_label.text = "Oyun bitti! Skor: %d | Seviye: %d | Enter ile yeni oyun" % [score, level]
 
 func update_ui():
 	score_label.text = "Skor: %d" % score
 	lives_label.text = "Can: %d" % lives
+	level_label.text = "Seviye: %d" % level

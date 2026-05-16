@@ -55,6 +55,10 @@ text = "Skor: 0"
 layout_mode = 2
 text = "Can: 3"
 
+[node name="LevelLabel" type="Label" parent="CanvasLayer/UIBox" unique_id=135388550]
+layout_mode = 2
+text = "Seviye: 1"
+
 [node name="StatusLabel" type="Label" parent="CanvasLayer/UIBox" unique_id=2018384474]
 layout_mode = 2
 text = "Space ile topu başlat"
