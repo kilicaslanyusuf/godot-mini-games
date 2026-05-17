@@ -12,6 +12,7 @@ var max_lives := 3
 var game_over_state := false
 
 var rng := RandomNumberGenerator.new()
+var brick_hp := {}
 
 @onready var score_label = $CanvasLayer/UIBox/ScoreLabel
 @onready var lives_label = $CanvasLayer/UIBox/LivesLabel
@@ -124,23 +125,32 @@ func check_brick_collision():
 		var y_close = abs(ball.global_position.y - brick.global_position.y) <= 30
 
 		if x_close and y_close:
-			brick.visible = false
-			brick.get_node("Sprite2D").visible = false
+			hit_brick(brick)
 
 			if ball_velocity.y < 0:
 				ball_velocity.y = abs(ball_velocity.y)
 			else:
 				ball_velocity.y = -abs(ball_velocity.y)
 
-			score += 1
-			update_ui()
-
-			if all_bricks_broken():
-				next_level()
-			else:
-				status_label.text = "Tuğla kırıldı!"
-
 			break
+
+func hit_brick(brick):
+	var key = brick.name
+	brick_hp[key] -= 1
+
+	if brick_hp[key] <= 0:
+		brick.visible = false
+		brick.get_node("Sprite2D").visible = false
+		score += 1
+		update_ui()
+
+		if all_bricks_broken():
+			next_level()
+		else:
+			status_label.text = "Tuğla kırıldı!"
+	else:
+		set_brick_visual(brick, brick_hp[key])
+		status_label.text = "Sert tuğla çatladı!"
 
 func all_bricks_broken() -> bool:
 	for brick in bricks:
@@ -169,6 +179,21 @@ func reset_bricks():
 			start_x + col * gap_x,
 			start_y + row * gap_y
 		)
+
+		if row == 0:
+			brick_hp[brick.name] = 2
+		else:
+			brick_hp[brick.name] = 1
+
+		set_brick_visual(brick, brick_hp[brick.name])
+
+func set_brick_visual(brick, hp):
+	var sprite = brick.get_node("Sprite2D")
+
+	if hp >= 2:
+		sprite.modulate = Color(1.0, 0.6, 0.2, 1.0)
+	else:
+		sprite.modulate = Color(1.0, 1.0, 1.0, 1.0)
 
 func next_level():
 	level += 1
