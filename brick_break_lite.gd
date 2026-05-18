@@ -1,5 +1,9 @@
 extends Node2D
 
+var base_paddle_scale_x := 0.55
+var min_paddle_scale_x := 0.35
+var base_paddle_collision_width := 140.0
+var min_paddle_collision_width := 80.0
 var base_ball_speed := 420.0
 var ball_speed := base_ball_speed
 var ball_velocity := Vector2.ZERO
@@ -20,6 +24,8 @@ var brick_hp := {}
 @onready var status_label = $CanvasLayer/UIBox/StatusLabel
 
 @onready var paddle = $Paddle
+@onready var paddle_sprite = $Paddle/Sprite2D
+@onready var paddle_collision = $Paddle/CollisionShape2D
 @onready var ball = $Ball
 
 @onready var bricks = [
@@ -45,6 +51,7 @@ func start_new_game():
 	lives = max_lives
 	ball_speed = base_ball_speed
 	game_over_state = false
+	reset_paddle_size()
 
 	reset_bricks()
 	show_start_state("Space ile topu başlat")
@@ -109,11 +116,12 @@ func move_ball(delta):
 			show_start_state("Can gitti! Space ile devam")
 
 func check_paddle_bounce():
-	var x_close = abs(ball.global_position.x - paddle.global_position.x) <= 85
+	var half_width = paddle_collision.shape.size.x / 2.0
+	var x_close = abs(ball.global_position.x - paddle.global_position.x) <= half_width
 	var y_close = abs(ball.global_position.y - paddle.global_position.y) <= 25
 
 	if x_close and y_close and ball_velocity.y > 0:
-		var offset = (ball.global_position.x - paddle.global_position.x) / 85.0
+		var offset = (ball.global_position.x - paddle.global_position.x) / half_width
 		ball_velocity = Vector2(offset, -1).normalized() * ball_speed
 
 func check_brick_collision():
@@ -158,6 +166,17 @@ func all_bricks_broken() -> bool:
 			return false
 	return true
 
+func reset_paddle_size():
+	paddle_sprite.scale = Vector2(base_paddle_scale_x, paddle_sprite.scale.y)
+	paddle_collision.shape.size.x = base_paddle_collision_width
+
+func update_paddle_difficulty():
+	var new_scale_x = max(min_paddle_scale_x, base_paddle_scale_x - (level - 1) * 0.04)
+	var new_collision_width = max(min_paddle_collision_width, base_paddle_collision_width - (level - 1) * 10.0)
+
+	paddle_sprite.scale = Vector2(new_scale_x, paddle_sprite.scale.y)
+	paddle_collision.shape.size.x = new_collision_width
+
 func reset_bricks():
 	var size = get_viewport_rect().size
 	var gap_x = 150.0
@@ -198,8 +217,9 @@ func set_brick_visual(brick, hp):
 func next_level():
 	level += 1
 	ball_speed += 40.0
+	update_paddle_difficulty()
 	reset_bricks()
-	show_start_state("Seviye %d! Space ile devam" % level)
+	show_start_state("Seviye %d! Top hızlandı, paddle küçüldü" % level)
 	update_ui()
 
 func game_over():
