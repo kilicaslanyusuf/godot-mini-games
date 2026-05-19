@@ -59,6 +59,10 @@ text = "Can: 3"
 layout_mode = 2
 text = "Seviye: 1"
 
+[node name="BestLabel" type="Label" parent="CanvasLayer/UIBox" unique_id=2056742187]
+layout_mode = 2
+text = "Rekor: 0 | En iyi seviye: 1"
+
 [node name="StatusLabel" type="Label" parent="CanvasLayer/UIBox" unique_id=2018384474]
 layout_mode = 2
 text = "Space ile topu başlat"

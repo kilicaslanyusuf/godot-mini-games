@@ -1,9 +1,5 @@
 extends Node2D
 
-var base_paddle_scale_x := 0.55
-var min_paddle_scale_x := 0.35
-var base_paddle_collision_width := 140.0
-var min_paddle_collision_width := 80.0
 var base_ball_speed := 420.0
 var ball_speed := base_ball_speed
 var ball_velocity := Vector2.ZERO
@@ -15,12 +11,22 @@ var lives := 3
 var max_lives := 3
 var game_over_state := false
 
+var base_paddle_scale_x := 0.55
+var min_paddle_scale_x := 0.35
+var base_paddle_collision_width := 140.0
+var min_paddle_collision_width := 80.0
+
+var best_score := 0
+var best_level := 1
+var save_path := "user://brick_break_save.save"
+
 var rng := RandomNumberGenerator.new()
 var brick_hp := {}
 
 @onready var score_label = $CanvasLayer/UIBox/ScoreLabel
 @onready var lives_label = $CanvasLayer/UIBox/LivesLabel
 @onready var level_label = $CanvasLayer/UIBox/LevelLabel
+@onready var best_label = $CanvasLayer/UIBox/BestLabel
 @onready var status_label = $CanvasLayer/UIBox/StatusLabel
 
 @onready var paddle = $Paddle
@@ -43,6 +49,7 @@ var brick_hp := {}
 
 func _ready():
 	rng.randomize()
+	load_progress()
 	start_new_game()
 
 func start_new_game():
@@ -150,6 +157,7 @@ func hit_brick(brick):
 		brick.visible = false
 		brick.get_node("Sprite2D").visible = false
 		score += 1
+		check_records()
 		update_ui()
 
 		if all_bricks_broken():
@@ -214,10 +222,25 @@ func set_brick_visual(brick, hp):
 	else:
 		sprite.modulate = Color(1.0, 1.0, 1.0, 1.0)
 
+func check_records():
+	var changed := false
+
+	if score > best_score:
+		best_score = score
+		changed = true
+
+	if level > best_level:
+		best_level = level
+		changed = true
+
+	if changed:
+		save_progress()
+
 func next_level():
 	level += 1
 	ball_speed += 40.0
 	update_paddle_difficulty()
+	check_records()
 	reset_bricks()
 	show_start_state("Seviye %d! Top hızlandı, paddle küçüldü" % level)
 	update_ui()
@@ -229,7 +252,25 @@ func game_over():
 	reset_ball_on_paddle()
 	status_label.text = "Oyun bitti! Skor: %d | Seviye: %d | Enter ile yeni oyun" % [score, level]
 
+func save_progress():
+	var file = FileAccess.open(save_path, FileAccess.WRITE)
+	if file:
+		file.store_var({
+			"best_score": best_score,
+			"best_level": best_level
+		})
+
+func load_progress():
+	if FileAccess.file_exists(save_path):
+		var file = FileAccess.open(save_path, FileAccess.READ)
+		if file:
+			var data = file.get_var()
+			if data is Dictionary:
+				best_score = int(data.get("best_score", 0))
+				best_level = int(data.get("best_level", 1))
+
 func update_ui():
 	score_label.text = "Skor: %d" % score
 	lives_label.text = "Can: %d" % lives
 	level_label.text = "Seviye: %d" % level
+	best_label.text = "Rekor: %d | En iyi seviye: %d" % [best_score, best_level]
