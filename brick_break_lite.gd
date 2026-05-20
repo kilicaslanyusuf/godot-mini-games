@@ -22,6 +22,12 @@ var save_path := "user://brick_break_save.save"
 
 var rng := RandomNumberGenerator.new()
 var brick_hp := {}
+var level_patterns = [
+	[2,2,2,2,2, 1,1,1,1,1],
+	[2,0,2,0,2, 1,1,1,1,1],
+	[2,2,0,2,2, 0,1,1,1,0],
+	[0,2,2,2,0, 1,1,0,1,1]
+]
 
 @onready var score_label = $CanvasLayer/UIBox/ScoreLabel
 @onready var lives_label = $CanvasLayer/UIBox/LivesLabel
@@ -150,6 +156,8 @@ func check_brick_collision():
 			break
 
 func hit_brick(brick):
+	if brick_hp[brick.name] <= 0:
+		return
 	var key = brick.name
 	brick_hp[key] -= 1
 
@@ -185,6 +193,9 @@ func update_paddle_difficulty():
 	paddle_sprite.scale = Vector2(new_scale_x, paddle_sprite.scale.y)
 	paddle_collision.shape.size.x = new_collision_width
 
+func get_current_pattern():
+	return level_patterns[(level - 1) % level_patterns.size()]
+
 func reset_bricks():
 	var size = get_viewport_rect().size
 	var gap_x = 150.0
@@ -195,24 +206,28 @@ func reset_bricks():
 	var start_x = rng.randi_range(160, int(size.x - 160 - total_width))
 	var start_y = rng.randi_range(110, 170)
 
+	var pattern = get_current_pattern()
+
 	for i in range(bricks.size()):
 		var brick = bricks[i]
 		var row = i / cols
 		var col = i % cols
+		var hp_value = pattern[i]
 
-		brick.visible = true
-		brick.get_node("Sprite2D").visible = true
 		brick.global_position = Vector2(
 			start_x + col * gap_x,
 			start_y + row * gap_y
 		)
 
-		if row == 0:
-			brick_hp[brick.name] = 2
+		if hp_value == 0:
+			brick.visible = false
+			brick.get_node("Sprite2D").visible = false
+			brick_hp[brick.name] = 0
 		else:
-			brick_hp[brick.name] = 1
-
-		set_brick_visual(brick, brick_hp[brick.name])
+			brick.visible = true
+			brick.get_node("Sprite2D").visible = true
+			brick_hp[brick.name] = hp_value
+			set_brick_visual(brick, brick_hp[brick.name])
 
 func set_brick_visual(brick, hp):
 	var sprite = brick.get_node("Sprite2D")
