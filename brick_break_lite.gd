@@ -22,11 +22,12 @@ var save_path := "user://brick_break_save.save"
 
 var rng := RandomNumberGenerator.new()
 var brick_hp := {}
+var brick_type := {}
 var level_patterns = [
-	[2,2,2,2,2, 1,1,1,1,1],
-	[2,0,2,0,2, 1,1,1,1,1],
-	[2,2,0,2,2, 0,1,1,1,0],
-	[0,2,2,2,0, 1,1,0,1,1]
+	[2,2,3,2,2, 1,1,1,1,1],
+	[2,0,2,0,2, 1,3,1,3,1],
+	[2,2,0,2,2, 0,1,3,1,0],
+	[0,2,3,2,0, 1,1,0,1,1]
 ]
 
 @onready var score_label = $CanvasLayer/UIBox/ScoreLabel
@@ -158,22 +159,35 @@ func check_brick_collision():
 func hit_brick(brick):
 	if brick_hp[brick.name] <= 0:
 		return
+
 	var key = brick.name
 	brick_hp[key] -= 1
 
 	if brick_hp[key] <= 0:
+		var type_value = brick_type[key]
+
 		brick.visible = false
 		brick.get_node("Sprite2D").visible = false
-		score += 1
+
+		if type_value == 3:
+			score += 3
+			lives = min(max_lives, lives + 1)
+			status_label.text = "Bonus tuğla! +3 skor, +1 can"
+		else:
+			score += 1
+
+			if all_bricks_broken():
+				status_label.text = "Bölüm temizlendi!"
+			else:
+				status_label.text = "Tuğla kırıldı!"
+
 		check_records()
 		update_ui()
 
 		if all_bricks_broken():
 			next_level()
-		else:
-			status_label.text = "Tuğla kırıldı!"
 	else:
-		set_brick_visual(brick, brick_hp[key])
+		set_brick_visual(brick)
 		status_label.text = "Sert tuğla çatladı!"
 
 func all_bricks_broken() -> bool:
@@ -212,27 +226,38 @@ func reset_bricks():
 		var brick = bricks[i]
 		var row = i / cols
 		var col = i % cols
-		var hp_value = pattern[i]
+		var type_value = pattern[i]
 
 		brick.global_position = Vector2(
 			start_x + col * gap_x,
 			start_y + row * gap_y
 		)
 
-		if hp_value == 0:
+		brick_type[brick.name] = type_value
+
+		if type_value == 0:
 			brick.visible = false
 			brick.get_node("Sprite2D").visible = false
 			brick_hp[brick.name] = 0
 		else:
 			brick.visible = true
 			brick.get_node("Sprite2D").visible = true
-			brick_hp[brick.name] = hp_value
-			set_brick_visual(brick, brick_hp[brick.name])
 
-func set_brick_visual(brick, hp):
+			if type_value == 2:
+				brick_hp[brick.name] = 2
+			else:
+				brick_hp[brick.name] = 1
+
+			set_brick_visual(brick)
+
+func set_brick_visual(brick):
 	var sprite = brick.get_node("Sprite2D")
+	var type_value = brick_type[brick.name]
+	var hp_value = brick_hp[brick.name]
 
-	if hp >= 2:
+	if type_value == 3:
+		sprite.modulate = Color(0.3, 1.0, 0.3, 1.0)
+	elif hp_value >= 2:
 		sprite.modulate = Color(1.0, 0.6, 0.2, 1.0)
 	else:
 		sprite.modulate = Color(1.0, 1.0, 1.0, 1.0)
