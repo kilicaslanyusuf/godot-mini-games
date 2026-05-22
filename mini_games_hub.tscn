@@ -1,0 +1,45 @@
+[gd_scene format=3 uid="uid://cxds1dijpvgk7"]
+
+[ext_resource type="Script" uid="uid://cndqkgwvy0o4d" path="res://mini_games_hub.gd" id="1_d2yjs"]
+
+[node name="Hub" type="Control" unique_id=1491030916]
+layout_mode = 3
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 40.0
+script = ExtResource("1_d2yjs")
+
+[node name="TitleLabel" type="Label" parent="." unique_id=1208922142]
+layout_mode = 0
+offset_left = 390.0
+offset_top = 90.0
+offset_right = 533.0
+offset_bottom = 113.0
+text = "Godot Mini Games"
+
+[node name="ButtonColumn" type="VBoxContainer" parent="." unique_id=1539588913]
+layout_mode = 0
+offset_left = 420.0
+offset_top = 180.0
+offset_right = 550.0
+offset_bottom = 351.0
+
+[node name="CollectorButton" type="Button" parent="ButtonColumn" unique_id=1961992284]
+layout_mode = 2
+text = "Collector Rush"
+
+[node name="DodgeButton" type="Button" parent="ButtonColumn" unique_id=822703850]
+layout_mode = 2
+text = "Dodge Trial"
+
+[node name="TargetButton" type="Button" parent="ButtonColumn" unique_id=1167746048]
+layout_mode = 2
+text = "Target Blaster"
+
+[node name="BrickButton" type="Button" parent="ButtonColumn" unique_id=1520204031]
+layout_mode = 2
+text = "Brick Break Lite"
+
+[node name="QuitButton" type="Button" parent="ButtonColumn" unique_id=426651287]
+layout_mode = 2
+text = "Çıkış"
