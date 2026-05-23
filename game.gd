@@ -4,6 +4,7 @@ var max_time := 30
 var new_record_this_run := false
 var score := 0
 var best_score := 0
+var save_path := "user://collector_rush_save.save"
 var time_left := 20
 var game_active := false
 
@@ -22,6 +23,7 @@ var rng := RandomNumberGenerator.new()
 
 func _ready():
 	rng.randomize()
+	load_best_score()
 	show_start_screen()
 
 func show_start_screen():
@@ -116,6 +118,7 @@ func check_collect():
 
 		if score > best_score:
 			best_score = score
+			save_best_score()
 			new_record_this_run = true
 
 		update_ui()
@@ -182,3 +185,14 @@ func finish_game():
 
 	result_text += " | Enter ile tekrar dene."
 	status_label.text = result_text
+
+func save_best_score():
+	var file = FileAccess.open(save_path, FileAccess.WRITE)
+	if file:
+		file.store_var(best_score)
+
+func load_best_score():
+	if FileAccess.file_exists(save_path):
+		var file = FileAccess.open(save_path, FileAccess.READ)
+		if file:
+			best_score = int(file.get_var())

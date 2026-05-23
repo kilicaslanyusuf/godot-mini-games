@@ -2,6 +2,7 @@ extends Node2D
 
 var best_survival_time := 0
 var survived_time := 0
+var save_path := "user://dodge_trial_save.save"
 
 var rng := RandomNumberGenerator.new()
 var time_left := 15
@@ -24,6 +25,7 @@ var enemy2_active := false
 
 func _ready():
 	rng.randomize()
+	load_best_survival_time()
 	show_start_screen()
 
 func show_start_screen():
@@ -45,7 +47,7 @@ func start_game():
 	game_active = true
 	enemy2_active = false
 	survived_time = 0
-	
+
 	enemy_speed = base_enemy_speed
 	enemy2_speed = base_enemy2_speed
 
@@ -54,7 +56,7 @@ func start_game():
 	enemy2.visible = false
 
 	var size = get_viewport_rect().size
-	
+
 	player.global_position = size / 2
 	enemy.global_position = get_random_edge_position()
 	enemy2.global_position = get_random_edge_position()
@@ -66,7 +68,7 @@ func start_game():
 func update_ui():
 	time_label.text = "Süre: %d" % time_left
 	best_time_label.text = "En iyi: %d" % best_survival_time
-	
+
 func get_random_edge_position() -> Vector2:
 	var size = get_viewport_rect().size
 	var margin = 40.0
@@ -101,13 +103,12 @@ func move_enemy(delta):
 func move_enemy2(delta):
 	var direction = (player.global_position - enemy2.global_position).normalized()
 	enemy2.global_position += direction * enemy2_speed * delta
-	
 
 func increase_difficulty():
 	enemy_speed += 20.0
 
 	if enemy2_active:
-		enemy2_speed += 25.0	
+		enemy2_speed += 25.0
 
 func check_enemy_collision():
 	if player.global_position.distance_to(enemy.global_position) < 30:
@@ -130,7 +131,7 @@ func _on_game_timer_timeout():
 	time_left -= 1
 	survived_time += 1
 	update_ui()
-	
+
 	if time_left == 12 or time_left == 9 or time_left == 6 or time_left == 3:
 		increase_difficulty()
 
@@ -150,6 +151,7 @@ func finish_game(won: bool):
 
 	if survived_time > best_survival_time:
 		best_survival_time = survived_time
+		save_best_survival_time()
 
 	update_ui()
 
@@ -157,3 +159,14 @@ func finish_game(won: bool):
 		status_label.text = "Kazandın! Süre: %d | En iyi: %d | Enter ile tekrar başla" % [survived_time, best_survival_time]
 	else:
 		status_label.text = "Yakalandın! Süre: %d | En iyi: %d | Enter ile tekrar başla" % [survived_time, best_survival_time]
+
+func save_best_survival_time():
+	var file = FileAccess.open(save_path, FileAccess.WRITE)
+	if file:
+		file.store_var(best_survival_time)
+
+func load_best_survival_time():
+	if FileAccess.file_exists(save_path):
+		var file = FileAccess.open(save_path, FileAccess.READ)
+		if file:
+			best_survival_time = int(file.get_var())
