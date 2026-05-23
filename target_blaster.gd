@@ -96,6 +96,9 @@ func start_game():
 	game_timer.start()
 
 func _physics_process(delta):
+	if Input.is_action_just_pressed("ui_cancel"):
+		get_tree().change_scene_to_file("res://mini_games_hub.tscn")
+		return
 	if Input.is_action_just_pressed("ui_accept") and not game_active:
 		start_game()
 

@@ -85,6 +85,9 @@ func get_random_edge_position() -> Vector2:
 			return Vector2(margin, rng.randi_range(int(margin), int(size.y - margin)))
 
 func _physics_process(delta):
+	if Input.is_action_just_pressed("ui_cancel"):
+		get_tree().change_scene_to_file("res://mini_games_hub.tscn")
+		return
 	if Input.is_action_just_pressed("ui_accept") and not game_active:
 		start_game()
 

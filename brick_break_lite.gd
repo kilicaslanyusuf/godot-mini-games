@@ -81,6 +81,9 @@ func reset_ball_on_paddle():
 	ball.global_position = paddle.global_position + Vector2(0, -45)
 
 func _physics_process(delta):
+	if Input.is_action_just_pressed("ui_cancel"):
+		get_tree().change_scene_to_file("res://mini_games_hub.tscn")
+		return
 	if game_over_state:
 		if Input.is_action_just_pressed("ui_accept"):
 			start_new_game()

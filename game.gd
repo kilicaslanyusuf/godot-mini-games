@@ -58,6 +58,9 @@ func set_world_visible(is_visible: bool):
 	bonus.visible = is_visible
 
 func _physics_process(_delta):
+	if Input.is_action_just_pressed("ui_cancel"):
+		get_tree().change_scene_to_file("res://mini_games_hub.tscn")
+		return
 	if game_active:
 		check_collect()
 		check_hazard()
