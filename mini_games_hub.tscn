@@ -43,3 +43,19 @@ text = "Brick Break Lite"
 [node name="QuitButton" type="Button" parent="ButtonColumn" unique_id=426651287]
 layout_mode = 2
 text = "Çıkış"
+
+[node name="InfoLabel" type="Label" parent="." unique_id=1073915145]
+layout_mode = 0
+offset_left = 320.0
+offset_top = 470.0
+offset_right = 419.0
+offset_bottom = 493.0
+text = "Bir oyun seç."
+
+[node name="RecordsLabel" type="Label" parent="." unique_id=1310111854]
+layout_mode = 0
+offset_left = 320.0
+offset_top = 505.0
+offset_right = 558.0
+offset_bottom = 528.0
+text = "Kayıt bilgisi burada görünecek."
