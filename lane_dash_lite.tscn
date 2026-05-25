@@ -1,0 +1,35 @@
+[gd_scene format=3 uid="uid://c1102l8yxddw5"]
+
+[ext_resource type="Script" uid="uid://bil757serlcwa" path="res://lane_dash_lite.gd" id="1_bcqln"]
+[ext_resource type="Texture2D" uid="uid://dx3iofbmpt48p" path="res://icon.svg" id="2_6bhao"]
+
+[node name="Game" type="Node2D" unique_id=92180759]
+script = ExtResource("1_bcqln")
+
+[node name="CanvasLayer" type="CanvasLayer" parent="." unique_id=1906723880]
+
+[node name="UIBox" type="VBoxContainer" parent="CanvasLayer" unique_id=491388449]
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="ScoreLabel" type="Label" parent="CanvasLayer/UIBox" unique_id=1202240767]
+layout_mode = 2
+text = "Skor: 0"
+
+[node name="StatusLabel" type="Label" parent="CanvasLayer/UIBox" unique_id=528748881]
+layout_mode = 2
+text = "Enter ile başla"
+
+[node name="Player" type="Node2D" parent="." unique_id=312634552]
+position = Vector2(576, 560)
+
+[node name="Sprite2D" type="Sprite2D" parent="Player" unique_id=836933200]
+scale = Vector2(0.18, 0.18)
+texture = ExtResource("2_6bhao")
+
+[node name="Obstacle" type="Node2D" parent="." unique_id=641746868]
+position = Vector2(576, -80)
+
+[node name="Sprite2D" type="Sprite2D" parent="Obstacle" unique_id=444077540]
+scale = Vector2(0.18, 0.18)
+texture = ExtResource("2_6bhao")
