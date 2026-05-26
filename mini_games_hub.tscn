@@ -40,6 +40,10 @@ text = "Target Blaster"
 layout_mode = 2
 text = "Brick Break Lite"
 
+[node name="LaneButton" type="Button" parent="ButtonColumn" unique_id=127573783]
+layout_mode = 2
+text = "Lane Dash Lite"
+
 [node name="QuitButton" type="Button" parent="ButtonColumn" unique_id=426651287]
 layout_mode = 2
 text = "Çıkış"

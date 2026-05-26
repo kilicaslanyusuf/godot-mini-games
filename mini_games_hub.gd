@@ -4,6 +4,7 @@ extends Control
 @onready var dodge_button = $ButtonColumn/DodgeButton
 @onready var target_button = $ButtonColumn/TargetButton
 @onready var brick_button = $ButtonColumn/BrickButton
+@onready var lane_button = $ButtonColumn/LaneButton
 @onready var quit_button = $ButtonColumn/QuitButton
 
 @onready var info_label = $InfoLabel
@@ -14,18 +15,21 @@ func _ready():
 	dodge_button.pressed.connect(_open_dodge)
 	target_button.pressed.connect(_open_target)
 	brick_button.pressed.connect(_open_brick)
+	lane_button.pressed.connect(_open_lane)
 	quit_button.pressed.connect(_quit_game)
 
 	collector_button.mouse_entered.connect(func(): show_game_info("collector"))
 	dodge_button.mouse_entered.connect(func(): show_game_info("dodge"))
 	target_button.mouse_entered.connect(func(): show_game_info("target"))
 	brick_button.mouse_entered.connect(func(): show_game_info("brick"))
+	lane_button.mouse_entered.connect(func(): show_game_info("lane"))
 	quit_button.mouse_entered.connect(func(): show_game_info("quit"))
 
 	collector_button.focus_entered.connect(func(): show_game_info("collector"))
 	dodge_button.focus_entered.connect(func(): show_game_info("dodge"))
 	target_button.focus_entered.connect(func(): show_game_info("target"))
 	brick_button.focus_entered.connect(func(): show_game_info("brick"))
+	lane_button.focus_entered.connect(func(): show_game_info("lane"))
 	quit_button.focus_entered.connect(func(): show_game_info("quit"))
 
 	show_game_info("collector")
@@ -53,6 +57,11 @@ func show_game_info(game_name: String):
 			var best_level = int(data.get("best_level", 1))
 			info_label.text = "Brick Break Lite: tuğlaları kır, canı koru, level atla."
 			records_label.text = "Rekor: %d | En iyi seviye: %d" % [best_score, best_level]
+
+		"lane":
+			var best_score = load_int_save("user://lane_dash_lite_save.save", 0)
+			info_label.text = "Lane Dash Lite: 3 şeritte kaç, engelleri atlat, hızla baş et."
+			records_label.text = "Rekor skor: %d" % best_score
 
 		"quit":
 			info_label.text = "Oyundan çık."
@@ -85,6 +94,9 @@ func _open_target():
 
 func _open_brick():
 	get_tree().change_scene_to_file("res://brick_break_lite.tscn")
+
+func _open_lane():
+	get_tree().change_scene_to_file("res://lane_dash_lite.tscn")
 
 func _quit_game():
 	get_tree().quit()

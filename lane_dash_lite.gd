@@ -7,17 +7,21 @@ var base_obstacle_speed := 260.0
 var obstacle_speed := base_obstacle_speed
 
 var score := 0
+var best_score := 0
+var save_path := "user://lane_dash_lite_save.save"
 var game_active := false
 
 var rng := RandomNumberGenerator.new()
 
 @onready var score_label = $CanvasLayer/UIBox/ScoreLabel
+@onready var best_score_label = $CanvasLayer/UIBox/BestScoreLabel
 @onready var status_label = $CanvasLayer/UIBox/StatusLabel
 @onready var player = $Player
 @onready var obstacle = $Obstacle
 
 func _ready():
 	rng.randomize()
+	load_best_score()
 	show_start_screen()
 
 func show_start_screen():
@@ -73,9 +77,15 @@ func move_obstacle(delta):
 	if obstacle.global_position.y > 720:
 		score += 1
 
+		if score > best_score:
+			best_score = score
+			save_best_score()
+
 		if score % 5 == 0:
 			obstacle_speed += 35.0
 			status_label.text = "Hız arttı!"
+		else:
+			status_label.text = "Sağ/sol ile kaç"
 
 		update_ui()
 		respawn_obstacle()
@@ -93,7 +103,19 @@ func check_collision():
 
 func finish_game():
 	game_active = false
-	status_label.text = "Çarptın! Skor: %d | Enter ile tekrar" % score
+	status_label.text = "Çarptın! Skor: %d | En iyi: %d | Enter ile tekrar" % [score, best_score]
 
 func update_ui():
 	score_label.text = "Skor: %d" % score
+	best_score_label.text = "En iyi: %d" % best_score
+
+func save_best_score():
+	var file = FileAccess.open(save_path, FileAccess.WRITE)
+	if file:
+		file.store_var(best_score)
+
+func load_best_score():
+	if FileAccess.file_exists(save_path):
+		var file = FileAccess.open(save_path, FileAccess.READ)
+		if file:
+			best_score = int(file.get_var())
