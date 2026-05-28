@@ -12,6 +12,9 @@ var save_path := "user://lane_dash_lite_save.save"
 var game_active := false
 var obstacle2_active := false
 
+var shield_active := false
+var shield_on_field := false
+
 var rng := RandomNumberGenerator.new()
 
 @onready var score_label = $CanvasLayer/UIBox/ScoreLabel
@@ -20,10 +23,13 @@ var rng := RandomNumberGenerator.new()
 @onready var player = $Player
 @onready var obstacle = $Obstacle
 @onready var obstacle2 = $Obstacle2
+@onready var shield = $Shield
+@onready var shield_sprite = $Shield/Sprite2D
 
 func _ready():
 	rng.randomize()
 	load_best_score()
+	shield_sprite.modulate = Color(0.3, 1.0, 0.3, 1.0)
 	show_start_screen()
 
 func show_start_screen():
@@ -32,11 +38,16 @@ func show_start_screen():
 	current_lane = 1
 	obstacle_speed = base_obstacle_speed
 	obstacle2_active = false
+	shield_active = false
+	shield_on_field = false
 
 	player.global_position = Vector2(lane_positions[current_lane], 560)
 	obstacle.global_position = Vector2(lane_positions[1], -80)
 	obstacle2.global_position = Vector2(lane_positions[0], -300)
+	shield.global_position = Vector2(lane_positions[1], -500)
+
 	obstacle2.visible = false
+	shield.visible = false
 
 	update_ui()
 	status_label.text = "Enter ile başla"
@@ -47,11 +58,16 @@ func start_game():
 	current_lane = 1
 	obstacle_speed = base_obstacle_speed
 	obstacle2_active = false
+	shield_active = false
+	shield_on_field = false
 
 	player.global_position = Vector2(lane_positions[current_lane], 560)
-	respawn_obstacle(obstacle, -80, -1)
+	respawn_in_free_lane(obstacle, -80, [])
 	obstacle2.global_position = Vector2(lane_positions[0], -300)
 	obstacle2.visible = false
+
+	shield.global_position = Vector2(lane_positions[1], -500)
+	shield.visible = false
 
 	update_ui()
 	status_label.text = "Sağ/sol ile kaç"
@@ -67,7 +83,7 @@ func _physics_process(delta):
 		return
 
 	handle_lane_input()
-	move_obstacles(delta)
+	move_entities(delta)
 	check_collision()
 
 func handle_lane_input():
@@ -79,21 +95,34 @@ func handle_lane_input():
 		current_lane = min(2, current_lane + 1)
 		player.global_position.x = lane_positions[current_lane]
 
-func move_obstacles(delta):
+func move_entities(delta):
 	obstacle.global_position.y += obstacle_speed * delta
 
 	if obstacle.global_position.y > 720:
 		register_dodge()
-		var forbidden_lane = get_lane_index_for_node(obstacle2) if obstacle2_active else -1
-		respawn_obstacle(obstacle, -80, forbidden_lane)
+		var blocked_lanes = []
+		if obstacle2_active:
+			blocked_lanes.append(get_lane_index_for_node(obstacle2))
+		if shield_on_field:
+			blocked_lanes.append(get_lane_index_for_node(shield))
+		respawn_in_free_lane(obstacle, -80, blocked_lanes)
 
 	if obstacle2_active:
 		obstacle2.global_position.y += obstacle_speed * 1.08 * delta
 
 		if obstacle2.global_position.y > 720:
 			register_dodge()
-			var forbidden_lane = get_lane_index_for_node(obstacle)
-			respawn_obstacle(obstacle2, -260, forbidden_lane)
+			var blocked_lanes = [get_lane_index_for_node(obstacle)]
+			if shield_on_field:
+				blocked_lanes.append(get_lane_index_for_node(shield))
+			respawn_in_free_lane(obstacle2, -260, blocked_lanes)
+
+	if shield_on_field:
+		shield.global_position.y += obstacle_speed * 0.82 * delta
+
+		if shield.global_position.y > 720:
+			shield_on_field = false
+			shield.visible = false
 
 func register_dodge():
 	score += 1
@@ -105,27 +134,45 @@ func register_dodge():
 	if score >= 8 and not obstacle2_active:
 		activate_obstacle2()
 
+	if score >= 6 and not shield_active and not shield_on_field and score % 6 == 0:
+		spawn_shield()
+
 	if score % 5 == 0:
 		obstacle_speed += 35.0
 		status_label.text = "Hız arttı!"
 	else:
-		status_label.text = "Sağ/sol ile kaç"
+		if shield_active:
+			status_label.text = "Kalkan hazır"
+		else:
+			status_label.text = "Sağ/sol ile kaç"
 
 	update_ui()
 
 func activate_obstacle2():
 	obstacle2_active = true
 	obstacle2.visible = true
-	var forbidden_lane = get_lane_index_for_node(obstacle)
-	respawn_obstacle(obstacle2, -260, forbidden_lane)
+	var blocked_lanes = [get_lane_index_for_node(obstacle)]
+	respawn_in_free_lane(obstacle2, -260, blocked_lanes)
 	status_label.text = "İkinci engel aktif!"
 
-func respawn_obstacle(node: Node2D, y_value: float, forbidden_lane: int):
-	var lane_index = rng.randi_range(0, 2)
+func spawn_shield():
+	shield_on_field = true
+	shield.visible = true
 
-	if forbidden_lane != -1:
-		while lane_index == forbidden_lane:
-			lane_index = rng.randi_range(0, 2)
+	var blocked_lanes = [get_lane_index_for_node(obstacle)]
+	if obstacle2_active:
+		blocked_lanes.append(get_lane_index_for_node(obstacle2))
+
+	respawn_in_free_lane(shield, -220, blocked_lanes)
+	status_label.text = "Kalkan geliyor!"
+
+func respawn_in_free_lane(node: Node2D, y_value: float, forbidden_lanes: Array):
+	var lane_index = rng.randi_range(0, 2)
+	var tries = 0
+
+	while lane_index in forbidden_lanes and tries < 20:
+		lane_index = rng.randi_range(0, 2)
+		tries += 1
 
 	node.global_position = Vector2(lane_positions[lane_index], y_value)
 
@@ -136,26 +183,53 @@ func get_lane_index_for_node(node: Node2D) -> int:
 	return -1
 
 func check_collision():
-	var same_lane_1 = abs(player.global_position.x - obstacle.global_position.x) < 10
-	var y_close_1 = abs(player.global_position.y - obstacle.global_position.y) < 55
-
-	if same_lane_1 and y_close_1:
-		finish_game()
+	if hit_with_node(obstacle):
+		handle_obstacle_hit(obstacle, -80)
 		return
 
-	if obstacle2_active:
-		var same_lane_2 = abs(player.global_position.x - obstacle2.global_position.x) < 10
-		var y_close_2 = abs(player.global_position.y - obstacle2.global_position.y) < 55
+	if obstacle2_active and hit_with_node(obstacle2):
+		handle_obstacle_hit(obstacle2, -260)
+		return
 
-		if same_lane_2 and y_close_2:
-			finish_game()
+	if shield_on_field and hit_with_node(shield, 45):
+		collect_shield()
+
+func hit_with_node(node: Node2D, y_limit: float = 55.0) -> bool:
+	var same_lane = abs(player.global_position.x - node.global_position.x) < 10
+	var y_close = abs(player.global_position.y - node.global_position.y) < y_limit
+	return same_lane and y_close
+
+func handle_obstacle_hit(node: Node2D, y_value: float):
+	if shield_active:
+		shield_active = false
+		status_label.text = "Kalkan kırıldı!"
+		var blocked_lanes = []
+		if node != obstacle:
+			blocked_lanes.append(get_lane_index_for_node(obstacle))
+		if node != obstacle2 and obstacle2_active:
+			blocked_lanes.append(get_lane_index_for_node(obstacle2))
+		if shield_on_field:
+			blocked_lanes.append(get_lane_index_for_node(shield))
+		respawn_in_free_lane(node, y_value, blocked_lanes)
+	else:
+		finish_game()
+
+func collect_shield():
+	shield_active = true
+	shield_on_field = false
+	shield.visible = false
+	status_label.text = "Kalkan alındı!"
 
 func finish_game():
 	game_active = false
 	status_label.text = "Çarptın! Skor: %d | En iyi: %d | Enter ile tekrar" % [score, best_score]
 
 func update_ui():
-	score_label.text = "Skor: %d" % score
+	var shield_text = ""
+	if shield_active:
+		shield_text = " | Kalkan: Var"
+
+	score_label.text = "Skor: %d%s" % [score, shield_text]
 	best_score_label.text = "En iyi: %d" % best_score
 
 func save_best_score():

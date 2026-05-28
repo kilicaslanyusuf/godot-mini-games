@@ -44,3 +44,10 @@ position = Vector2(360, -300)
 [node name="Sprite2D" type="Sprite2D" parent="Obstacle2" unique_id=930394670]
 scale = Vector2(0.18, 0.18)
 texture = ExtResource("2_6bhao")
+
+[node name="Shield" type="Node2D" parent="." unique_id=1269713986]
+position = Vector2(576, -500)
+
+[node name="Sprite2D" type="Sprite2D" parent="Shield" unique_id=1112093912]
+scale = Vector2(0.14, 0.14)
+texture = ExtResource("2_6bhao")
