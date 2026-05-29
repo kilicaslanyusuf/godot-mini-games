@@ -9,6 +9,7 @@ extends Control
 
 @onready var info_label = $InfoLabel
 @onready var records_label = $RecordsLabel
+@onready var controls_label = $ControlsLabel
 
 func _ready():
 	collector_button.pressed.connect(_open_collector)
@@ -32,6 +33,7 @@ func _ready():
 	lane_button.focus_entered.connect(func(): show_game_info("lane"))
 	quit_button.focus_entered.connect(func(): show_game_info("quit"))
 
+	collector_button.grab_focus()
 	show_game_info("collector")
 
 func show_game_info(game_name: String):
@@ -40,16 +42,19 @@ func show_game_info(game_name: String):
 			var best_score = load_int_save("user://collector_rush_save.save", 0)
 			info_label.text = "Collector Rush: topla, hazarddan kaç, bonus zamanı kap."
 			records_label.text = "Rekor skor: %d" % best_score
+			controls_label.text = "Kontrol: Ok tuşları | Enter başlat | ESC hub"
 
 		"dodge":
 			var best_time = load_int_save("user://dodge_trial_save.save", 0)
 			info_label.text = "Dodge Trial: düşmanlardan kaç, süre dolana kadar hayatta kal."
 			records_label.text = "En iyi hayatta kalma: %d sn" % best_time
+			controls_label.text = "Kontrol: Ok tuşları | Enter başlat | ESC hub"
 
 		"target":
 			var best_score = load_int_save("user://target_blaster_save.save", 0)
 			info_label.text = "Target Blaster: hedefi vur, combo yap, kaçırma."
 			records_label.text = "Rekor skor: %d" % best_score
+			controls_label.text = "Kontrol: Sağ/sol hareket | Space ateş | ESC hub"
 
 		"brick":
 			var data = load_dict_save("user://brick_break_save.save")
@@ -57,15 +62,18 @@ func show_game_info(game_name: String):
 			var best_level = int(data.get("best_level", 1))
 			info_label.text = "Brick Break Lite: tuğlaları kır, canı koru, level atla."
 			records_label.text = "Rekor: %d | En iyi seviye: %d" % [best_score, best_level]
+			controls_label.text = "Kontrol: Sağ/sol | Space başlat | ESC hub"
 
 		"lane":
 			var best_score = load_int_save("user://lane_dash_lite_save.save", 0)
 			info_label.text = "Lane Dash Lite: 3 şeritte kaç, engelleri atlat, hızla baş et."
 			records_label.text = "Rekor skor: %d" % best_score
+			controls_label.text = "Kontrol: Sağ/sol şerit | Enter başlat | ESC hub"
 
 		"quit":
 			info_label.text = "Oyundan çık."
 			records_label.text = "Paket kapanır."
+			controls_label.text = "Kontrol: Tıkla ve çık"
 
 func load_int_save(path: String, default_value: int) -> int:
 	if FileAccess.file_exists(path):

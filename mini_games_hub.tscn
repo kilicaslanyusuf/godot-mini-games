@@ -63,3 +63,11 @@ offset_top = 505.0
 offset_right = 558.0
 offset_bottom = 528.0
 text = "Kayıt bilgisi burada görünecek."
+
+[node name="ControlsLabel" type="Label" parent="." unique_id=235720418]
+layout_mode = 0
+offset_left = 320.0
+offset_top = 540.0
+offset_right = 548.0
+offset_bottom = 563.0
+text = "Kontroller burada görünecek."
