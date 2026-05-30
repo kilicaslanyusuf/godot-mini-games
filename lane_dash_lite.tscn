@@ -20,6 +20,10 @@ text = "Skor: 0"
 layout_mode = 2
 text = "En İyi: 0"
 
+[node name="LivesLabel" type="Label" parent="CanvasLayer/UIBox" unique_id=890773788]
+layout_mode = 2
+text = "Can: 3"
+
 [node name="StatusLabel" type="Label" parent="CanvasLayer/UIBox" unique_id=528748881]
 layout_mode = 2
 text = "Enter ile başla"
