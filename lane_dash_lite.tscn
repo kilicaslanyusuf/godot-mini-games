@@ -6,6 +6,9 @@
 [node name="Game" type="Node2D" unique_id=92180759]
 script = ExtResource("1_bcqln")
 
+[node name="InvincibilityTimer" type="Timer" parent="." unique_id=188364309]
+one_shot = true
+
 [node name="CanvasLayer" type="CanvasLayer" parent="." unique_id=1906723880]
 
 [node name="UIBox" type="VBoxContainer" parent="CanvasLayer" unique_id=491388449]

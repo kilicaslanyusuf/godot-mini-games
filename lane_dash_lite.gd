@@ -17,6 +17,7 @@ var max_lives := 3
 
 var shield_active := false
 var shield_on_field := false
+var invincible := false
 
 var rng := RandomNumberGenerator.new()
 
@@ -29,14 +30,22 @@ var rng := RandomNumberGenerator.new()
 @onready var obstacle2 = $Obstacle2
 @onready var shield = $Shield
 @onready var shield_sprite = $Shield/Sprite2D
+@onready var player_sprite = $Player/Sprite2D
+@onready var invincibility_timer = $InvincibilityTimer
 
 func _ready():
 	rng.randomize()
 	load_best_score()
 	shield_sprite.modulate = Color(0.3, 1.0, 0.3, 1.0)
+	invincibility_timer.timeout.connect(_on_invincibility_timer_timeout)
 	show_start_screen()
 
+
+
 func show_start_screen():
+	invincible = false
+	invincibility_timer.stop()
+	player_sprite.modulate = Color(1, 1, 1, 1)
 	score = 0
 	game_active = false
 	current_lane = 1
@@ -58,6 +67,9 @@ func show_start_screen():
 	status_label.text = "Enter ile başla"
 
 func start_game():
+	invincible = false
+	invincibility_timer.stop()
+	player_sprite.modulate = Color(1, 1, 1, 1)
 	score = 0
 	game_active = true
 	current_lane = 1
@@ -77,6 +89,11 @@ func start_game():
 
 	update_ui()
 	status_label.text = "Sağ/sol ile kaç"
+	
+func begin_invincibility():
+	invincible = true
+	invincibility_timer.start()
+	player_sprite.modulate = Color(1, 1, 1, 0.45)	
 
 func _physics_process(delta):
 	if Input.is_action_just_pressed("ui_cancel"):
@@ -189,13 +206,14 @@ func get_lane_index_for_node(node: Node2D) -> int:
 	return -1
 
 func check_collision():
-	if hit_with_node(obstacle):
-		handle_obstacle_hit(obstacle, -80)
-		return
+	if not invincible:
+		if hit_with_node(obstacle):
+			handle_obstacle_hit(obstacle, -80)
+			return
 
-	if obstacle2_active and hit_with_node(obstacle2):
-		handle_obstacle_hit(obstacle2, -260)
-		return
+		if obstacle2_active and hit_with_node(obstacle2):
+			handle_obstacle_hit(obstacle2, -260)
+			return
 
 	if shield_on_field and hit_with_node(shield, 45):
 		collect_shield()
@@ -206,38 +224,32 @@ func hit_with_node(node: Node2D, y_limit: float = 55.0) -> bool:
 	return same_lane and y_close
 
 func handle_obstacle_hit(node: Node2D, y_value: float):
+	var blocked_lanes = []
+	if node != obstacle:
+		blocked_lanes.append(get_lane_index_for_node(obstacle))
+	if obstacle2_active and node != obstacle2:
+		blocked_lanes.append(get_lane_index_for_node(obstacle2))
+	if shield_on_field:
+		blocked_lanes.append(get_lane_index_for_node(shield))
+
 	if shield_active:
 		shield_active = false
-		status_label.text = "Kalkan kırıldı!"
-
-		var blocked_lanes = []
-		if node != obstacle:
-			blocked_lanes.append(get_lane_index_for_node(obstacle))
-		if obstacle2_active and node != obstacle2:
-			blocked_lanes.append(get_lane_index_for_node(obstacle2))
-		if shield_on_field:
-			blocked_lanes.append(get_lane_index_for_node(shield))
-
+		begin_invincibility()
+		status_label.text = "Kalkan kırıldı! Kısa süre güvendesin"
 		respawn_in_free_lane(node, y_value, blocked_lanes)
 		update_ui()
-	else:
-		lives -= 1
-		update_ui()
+		return
 
-		if lives <= 0:
-			finish_game()
-		else:
-			status_label.text = "Can gitti! Kalan can: %d" % lives
+	lives -= 1
+	update_ui()
 
-			var blocked_lanes = []
-			if node != obstacle:
-				blocked_lanes.append(get_lane_index_for_node(obstacle))
-			if obstacle2_active and node != obstacle2:
-				blocked_lanes.append(get_lane_index_for_node(obstacle2))
-			if shield_on_field:
-				blocked_lanes.append(get_lane_index_for_node(shield))
+	if lives <= 0:
+		finish_game()
+		return
 
-			respawn_in_free_lane(node, y_value, blocked_lanes)
+	begin_invincibility()
+	status_label.text = "Can gitti! Kısa süre dokunulmazsın"
+	respawn_in_free_lane(node, y_value, blocked_lanes)
 
 func collect_shield():
 	shield_active = true
@@ -245,6 +257,16 @@ func collect_shield():
 	shield.visible = false
 	status_label.text = "Kalkan alındı!"
 	update_ui()
+
+func _on_invincibility_timer_timeout():
+	invincible = false
+	player_sprite.modulate = Color(1, 1, 1, 1)
+
+	if game_active:
+		if shield_active:
+			status_label.text = "Kalkan hazır"
+		else:
+			status_label.text = "Sağ/sol ile kaç"	
 
 func finish_game():
 	game_active = false
