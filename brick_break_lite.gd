@@ -10,6 +10,7 @@ var level := 1
 var lives := 3
 var max_lives := 3
 var game_over_state := false
+var paused := false
 
 var base_paddle_scale_x := 0.55
 var min_paddle_scale_x := 0.35
@@ -65,13 +66,29 @@ func start_new_game():
 	lives = max_lives
 	ball_speed = base_ball_speed
 	game_over_state = false
+	paused = false
 	reset_paddle_size()
 
 	reset_bricks()
 	show_start_state("Space ile topu başlat")
 	update_ui()
 
+func toggle_pause():
+	if game_over_state:
+		return
+
+	paused = not paused
+
+	if paused:
+		status_label.text = "Duraklatıldı | P ile devam | ESC hub"
+	else:
+		if ball_launched:
+			status_label.text = "Devam"
+		else:
+			status_label.text = "Space ile topu başlat"
+
 func show_start_state(message: String = "Space ile topu başlat"):
+	paused = false
 	ball_launched = false
 	ball_velocity = Vector2.ZERO
 	status_label.text = message
@@ -81,12 +98,24 @@ func reset_ball_on_paddle():
 	ball.global_position = paddle.global_position + Vector2(0, -45)
 
 func _physics_process(delta):
+	if game_over_state:
+		if Input.is_action_just_pressed("ui_cancel"):
+			get_tree().change_scene_to_file("res://mini_games_hub.tscn")
+			return
+
+		if Input.is_action_just_pressed("ui_accept"):
+			start_new_game()
+		return
+
 	if Input.is_action_just_pressed("ui_cancel"):
 		get_tree().change_scene_to_file("res://mini_games_hub.tscn")
 		return
-	if game_over_state:
-		if Input.is_action_just_pressed("ui_accept"):
-			start_new_game()
+
+	if Input.is_action_just_pressed("pause_game"):
+		toggle_pause()
+		return
+
+	if paused:
 		return
 
 	if not ball_launched:
@@ -289,6 +318,7 @@ func next_level():
 	update_ui()
 
 func game_over():
+	paused = false
 	game_over_state = true
 	ball_launched = false
 	ball_velocity = Vector2.ZERO

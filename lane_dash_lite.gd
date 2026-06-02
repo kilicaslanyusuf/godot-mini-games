@@ -17,6 +17,7 @@ var max_lives := 3
 
 var shield_active := false
 var shield_on_field := false
+var paused := false
 var invincible := false
 
 var rng := RandomNumberGenerator.new()
@@ -62,11 +63,12 @@ func show_start_screen():
 
 	obstacle2.visible = false
 	shield.visible = false
-
+	paused = false
 	update_ui()
 	status_label.text = "Enter ile başla"
 
 func start_game():
+	paused = false
 	invincible = false
 	invincibility_timer.stop()
 	player_sprite.modulate = Color(1, 1, 1, 1)
@@ -89,6 +91,20 @@ func start_game():
 
 	update_ui()
 	status_label.text = "Sağ/sol ile kaç"
+
+func toggle_pause():
+	if not game_active:
+		return
+
+	paused = not paused
+
+	if paused:
+		status_label.text = "Duraklatıldı | P ile devam | ESC hub"
+	else:
+		if shield_active:
+			status_label.text = "Kalkan hazır"
+		else:
+			status_label.text = "Sağ/sol ile kaç"
 	
 func begin_invincibility():
 	invincible = true
@@ -100,9 +116,16 @@ func _physics_process(delta):
 		get_tree().change_scene_to_file("res://mini_games_hub.tscn")
 		return
 
+	if Input.is_action_just_pressed("pause_game") and game_active:
+		toggle_pause()
+		return
+
 	if not game_active:
 		if Input.is_action_just_pressed("ui_accept"):
 			start_game()
+		return
+
+	if paused:
 		return
 
 	handle_lane_input()
@@ -270,6 +293,7 @@ func _on_invincibility_timer_timeout():
 
 func finish_game():
 	game_active = false
+	paused = false
 	status_label.text = "Can bitti! Skor: %d | En iyi: %d | Enter ile tekrar" % [score, best_score]
 
 func update_ui():
