@@ -33,8 +33,24 @@ func _ready():
 	lane_button.focus_entered.connect(func(): show_game_info("lane"))
 	quit_button.focus_entered.connect(func(): show_game_info("quit"))
 
-	collector_button.grab_focus()
-	show_game_info("collector")
+	apply_last_game_focus()
+
+func apply_last_game_focus():
+	match AppState.last_game:
+		"collector":
+			collector_button.grab_focus()
+		"dodge":
+			dodge_button.grab_focus()
+		"target":
+			target_button.grab_focus()
+		"brick":
+			brick_button.grab_focus()
+		"lane":
+			lane_button.grab_focus()
+		_:
+			collector_button.grab_focus()
+
+	show_game_info(AppState.last_game)
 
 func show_game_info(game_name: String):
 	match game_name:
@@ -92,18 +108,23 @@ func load_dict_save(path: String) -> Dictionary:
 	return {}
 
 func _open_collector():
+	AppState.last_game = "collector"
 	get_tree().change_scene_to_file("res://collector_game.tscn")
 
 func _open_dodge():
+	AppState.last_game = "dodge"
 	get_tree().change_scene_to_file("res://dodge_trial.tscn")
 
 func _open_target():
+	AppState.last_game = "target"
 	get_tree().change_scene_to_file("res://target_blaster.tscn")
 
 func _open_brick():
+	AppState.last_game = "brick"
 	get_tree().change_scene_to_file("res://brick_break_lite.tscn")
 
 func _open_lane():
+	AppState.last_game = "lane"
 	get_tree().change_scene_to_file("res://lane_dash_lite.tscn")
 
 func _quit_game():
