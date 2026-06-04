@@ -62,4 +62,14 @@ texture = ExtResource("3_x2wng")
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Enemy2" unique_id=706318542]
 shape = SubResource("CircleShape2D_m55nn")
 
+[node name="SlowBonus" type="Node2D" parent="." unique_id=2014634094]
+
+[node name="Sprite2D" type="Sprite2D" parent="SlowBonus" unique_id=1014873713]
+scale = Vector2(0.14, 0.14)
+texture = ExtResource("3_x2wng")
+
+[node name="SlowTimer" type="Timer" parent="." unique_id=333321468]
+wait_time = 3.0
+one_shot = true
+
 [connection signal="timeout" from="GameTimer" to="." method="_on_game_timer_timeout"]
