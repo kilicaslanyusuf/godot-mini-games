@@ -7,6 +7,9 @@ var save_path := "user://dodge_trial_save.save"
 var rng := RandomNumberGenerator.new()
 var time_left := 15
 var game_active := false
+var paused := false
+var game_timer_remaining := 0.0
+var slow_timer_remaining := 0.0
 
 var base_enemy_speed := 180.0
 var base_enemy2_speed := 220.0
@@ -36,23 +39,34 @@ func _ready():
 	slow_timer.timeout.connect(_on_slow_timer_timeout)
 	show_start_screen()
 
+func set_player_control_enabled(enabled: bool):
+	player.set_process(enabled)
+	player.set_physics_process(enabled)
+	player.set_process_input(enabled)
+
 func show_start_screen():
 	time_left = 15
 	survived_time = 0
 	game_active = false
 	enemy2_active = false
 	slow_active = false
+	paused = false
+	game_timer_remaining = 0.0
+	slow_timer_remaining = 0.0
 
 	enemy_speed = base_enemy_speed
 	enemy2_speed = base_enemy2_speed
 
 	game_timer.stop()
+	game_timer.wait_time = 1.0
 	slow_timer.stop()
 
 	player.visible = false
 	enemy.visible = false
 	enemy2.visible = false
 	slow_bonus.visible = false
+
+	set_player_control_enabled(false)
 
 	update_ui()
 	status_label.text = "Başlamak için Enter"
@@ -63,6 +77,9 @@ func start_game():
 	enemy2_active = false
 	survived_time = 0
 	slow_active = false
+	paused = false
+	game_timer_remaining = 0.0
+	slow_timer_remaining = 0.0
 
 	enemy_speed = base_enemy_speed
 	enemy2_speed = base_enemy2_speed
@@ -72,7 +89,10 @@ func start_game():
 	enemy2.visible = false
 	slow_bonus.visible = false
 
+	set_player_control_enabled(true)
+
 	slow_timer.stop()
+	game_timer.wait_time = 1.0
 
 	var size = get_viewport_rect().size
 
@@ -87,6 +107,30 @@ func start_game():
 func update_ui():
 	time_label.text = "Süre: %d" % time_left
 	best_time_label.text = "En iyi: %d" % best_survival_time
+
+func _physics_process(delta):
+	if Input.is_action_just_pressed("ui_cancel"):
+		get_tree().change_scene_to_file("res://mini_games_hub.tscn")
+		return
+
+	if Input.is_action_just_pressed("pause_game") and game_active:
+		toggle_pause()
+		return
+
+	if Input.is_action_just_pressed("ui_accept") and not game_active:
+		start_game()
+
+	if paused:
+		return
+
+	if game_active:
+		move_enemy(delta)
+
+		if enemy2_active:
+			move_enemy2(delta)
+
+		check_enemy_collision()
+		check_slow_bonus()
 
 func get_random_edge_position() -> Vector2:
 	var size = get_viewport_rect().size
@@ -134,23 +178,6 @@ func spawn_slow_bonus():
 	slow_bonus.visible = true
 	status_label.text = "Yavaşlatma bonusu çıktı!"
 
-func _physics_process(delta):
-	if Input.is_action_just_pressed("ui_cancel"):
-		get_tree().change_scene_to_file("res://mini_games_hub.tscn")
-		return
-
-	if Input.is_action_just_pressed("ui_accept") and not game_active:
-		start_game()
-
-	if game_active:
-		move_enemy(delta)
-
-		if enemy2_active:
-			move_enemy2(delta)
-
-		check_enemy_collision()
-		check_slow_bonus()
-
 func move_enemy(delta):
 	var current_speed = enemy_speed
 	if slow_active:
@@ -194,9 +221,42 @@ func activate_enemy2():
 	enemy2.global_position = get_random_edge_position()
 	status_label.text = "İkinci düşman geldi!"
 
-func _on_game_timer_timeout():
+func toggle_pause():
 	if not game_active:
 		return
+
+	paused = not paused
+
+	if paused:
+		game_timer_remaining = game_timer.time_left
+		game_timer.stop()
+
+		if slow_active:
+			slow_timer_remaining = slow_timer.time_left
+			slow_timer.stop()
+
+		set_player_control_enabled(false)
+		status_label.text = "Duraklatıldı | P ile devam | ESC hub"
+	else:
+		if game_timer_remaining > 0.0:
+			game_timer.wait_time = game_timer_remaining
+			game_timer.start()
+
+		if slow_active and slow_timer_remaining > 0.0:
+			slow_timer.start(slow_timer_remaining)
+
+		set_player_control_enabled(true)
+
+		if slow_active:
+			status_label.text = "Yavaşlatma aktif!"
+		else:
+			status_label.text = "Kaç!"
+
+func _on_game_timer_timeout():
+	if not game_active or paused:
+		return
+
+	game_timer.wait_time = 1.0
 
 	time_left -= 1
 	survived_time += 1
@@ -222,11 +282,17 @@ func _on_slow_timer_timeout():
 		status_label.text = "Kaç!"
 
 func finish_game(won: bool):
+	paused = false
+	game_timer_remaining = 0.0
+	slow_timer_remaining = 0.0
 	game_active = false
 	game_timer.stop()
+	game_timer.wait_time = 1.0
 	slow_timer.stop()
 	slow_active = false
 	slow_bonus.visible = false
+
+	set_player_control_enabled(false)
 
 	player.visible = true
 	enemy.visible = true
