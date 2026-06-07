@@ -27,12 +27,17 @@ var target_base_scale := Vector2(1.0, 1.0)
 var target_min_scale := Vector2(0.45, 0.45)
 var hit_tolerance := 70.0
 
+var max_ammo := 6
+var ammo := 6
+var is_reloading := false
+
 @onready var score_label = $CanvasLayer/UIBox/ScoreLabel
 @onready var best_score_label = $CanvasLayer/UIBox/BestScoreLabel
 @onready var time_label = $CanvasLayer/UIBox/TimeLabel
 @onready var miss_label = $CanvasLayer/UIBox/MissLabel
 @onready var combo_label = $CanvasLayer/UIBox/ComboLabel
 @onready var status_label = $CanvasLayer/UIBox/StatusLabel
+@onready var ammo_label = $CanvasLayer/UIBox/AmmoLabel
 
 @onready var player = $Player
 @onready var bullet = $Bullet
@@ -40,6 +45,7 @@ var hit_tolerance := 70.0
 
 @onready var game_timer = $GameTimer
 @onready var combo_timer = $ComboTimer
+@onready var reload_timer = $ReloadTimer
 @onready var shots_label = $CanvasLayer/UIBox/ShotsLabel
 @onready var accuracy_label = $CanvasLayer/UIBox/AccuracyLabel
 
@@ -47,6 +53,7 @@ func _ready():
 	rng.randomize()
 	load_best_score()
 	target_base_scale = target.scale
+	reload_timer.timeout.connect(_on_reload_timer_timeout)
 	show_start_screen()
 
 func show_start_screen():
@@ -58,9 +65,12 @@ func show_start_screen():
 	combo_count = 0
 	shots_fired = 0
 	hits_landed = 0
+	ammo = max_ammo
+	is_reloading = false
 
 	game_timer.stop()
 	combo_timer.stop()
+	reload_timer.stop()
 
 	player.visible = true
 	target.visible = false
@@ -78,12 +88,15 @@ func start_game():
 	combo_count = 0
 	shots_fired = 0
 	hits_landed = 0
+	ammo = max_ammo
+	is_reloading = false
 	target_speed = base_target_speed
 	target.scale = target_base_scale
 	hit_tolerance = 70.0
 
 	game_timer.stop()
 	combo_timer.stop()
+	reload_timer.stop()
 
 	player.visible = true
 	target.visible = true
@@ -99,6 +112,7 @@ func _physics_process(delta):
 	if Input.is_action_just_pressed("ui_cancel"):
 		get_tree().change_scene_to_file("res://mini_games_hub.tscn")
 		return
+
 	if Input.is_action_just_pressed("ui_accept") and not game_active:
 		start_game()
 
@@ -111,13 +125,41 @@ func _physics_process(delta):
 	check_hit()
 
 func handle_shoot():
-	if Input.is_action_just_pressed("shoot") and not bullet_active:
-		bullet_active = true
-		bullet.visible = true
-		bullet.global_position = player.global_position + Vector2(0, -60)
-		shots_fired += 1
-		update_ui()
+	if not Input.is_action_just_pressed("shoot"):
+		return
+
+	if is_reloading:
+		status_label.text = "Şarjör dolduruluyor..."
+		return
+
+	if bullet_active:
+		return
+
+	if ammo <= 0:
+		begin_reload()
+		return
+
+	bullet_active = true
+	bullet.visible = true
+	bullet.global_position = player.global_position + Vector2(0, -60)
+
+	shots_fired += 1
+	ammo -= 1
+	update_ui()
+
+	if ammo <= 0:
+		begin_reload()
+	else:
 		status_label.text = "Ateş ettin"
+
+func begin_reload():
+	if is_reloading:
+		return
+
+	is_reloading = true
+	reload_timer.start()
+	update_ui()
+	status_label.text = "Şarjör dolduruluyor..."
 
 func move_bullet(delta):
 	if not bullet_active:
@@ -169,7 +211,7 @@ func check_hit():
 
 		reset_bullet()
 		move_target()
-		
+
 func update_target_difficulty():
 	var shrink_steps = int(score / 5)
 
@@ -177,7 +219,6 @@ func update_target_difficulty():
 	var new_scale_y = max(target_min_scale.y, target_base_scale.y - shrink_steps * 0.08)
 
 	target.scale = Vector2(new_scale_x, new_scale_y)
-
 	hit_tolerance = max(35.0, 70.0 - shrink_steps * 5.0)
 
 func move_target():
@@ -224,6 +265,11 @@ func update_ui():
 	accuracy_label.text = "İsabet: %%%d" % accuracy
 	combo_label.text = "Combo: x%d" % combo_count
 
+	if is_reloading:
+		ammo_label.text = "Mermi: Reload..."
+	else:
+		ammo_label.text = "Mermi: %d/%d" % [ammo, max_ammo]
+
 func _on_game_timer_timeout():
 	if not game_active:
 		return
@@ -241,17 +287,32 @@ func _on_combo_timer_timeout():
 	if game_active:
 		status_label.text = "Combo bitti"
 
+func _on_reload_timer_timeout():
+	ammo = max_ammo
+	is_reloading = false
+	update_ui()
+
+	if game_active:
+		if bullet_active:
+			status_label.text = "Şarjör doldu"
+		else:
+			status_label.text = "Tekrar ateş edebilirsin"
+
 func finish_game(won: bool):
 	game_active = false
 	game_timer.stop()
 	combo_timer.stop()
+	reload_timer.stop()
 	bullet_active = false
 	bullet.visible = false
 	target.visible = false
-	
+	is_reloading = false
+
 	var accuracy := 0
 	if shots_fired > 0:
 		accuracy = int((float(hits_landed) / float(shots_fired)) * 100.0)
+
+	update_ui()
 
 	if won:
 		status_label.text = "Süre bitti! Skor: %d | İsabet: %%%d | Enter ile tekrar başla" % [score, accuracy]

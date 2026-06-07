@@ -54,6 +54,10 @@ text = "Combo: x0"
 layout_mode = 2
 text = "Space ile ateş et"
 
+[node name="AmmoLabel" type="Label" parent="CanvasLayer/UIBox" unique_id=1878860408]
+layout_mode = 2
+text = "Mermi: 6/6"
+
 [node name="GameTimer" type="Timer" parent="." unique_id=937554490]
 
 [node name="ComboTimer" type="Timer" parent="." unique_id=373141192]
@@ -86,6 +90,10 @@ texture = ExtResource("2_vi1nr")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Target" unique_id=935853390]
 shape = SubResource("CircleShape2D_gc74m")
+
+[node name="ReloadTimer" type="Timer" parent="." unique_id=1623114680]
+wait_time = 1.5
+one_shot = true
 
 [connection signal="timeout" from="GameTimer" to="." method="_on_game_timer_timeout"]
 [connection signal="timeout" from="ComboTimer" to="." method="_on_combo_timer_timeout"]
