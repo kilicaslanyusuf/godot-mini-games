@@ -8,6 +8,7 @@ var save_path := "user://target_blaster_save.save"
 
 var time_left := 20
 var game_active := false
+var paused := false
 
 var misses := 0
 var max_misses := 3
@@ -31,6 +32,14 @@ var max_ammo := 6
 var ammo := 6
 var is_reloading := false
 
+var game_timer_remaining := 0.0
+var combo_timer_remaining := 0.0
+var reload_timer_remaining := 0.0
+
+var game_timer_default_wait := 0.0
+var combo_timer_default_wait := 0.0
+var reload_timer_default_wait := 0.0
+
 @onready var score_label = $CanvasLayer/UIBox/ScoreLabel
 @onready var best_score_label = $CanvasLayer/UIBox/BestScoreLabel
 @onready var time_label = $CanvasLayer/UIBox/TimeLabel
@@ -53,13 +62,25 @@ func _ready():
 	rng.randomize()
 	load_best_score()
 	target_base_scale = target.scale
+
 	reload_timer.timeout.connect(_on_reload_timer_timeout)
+
+	game_timer_default_wait = game_timer.wait_time
+	combo_timer_default_wait = combo_timer.wait_time
+	reload_timer_default_wait = reload_timer.wait_time
+
 	show_start_screen()
+
+func set_player_control_enabled(enabled: bool):
+	player.set_process(enabled)
+	player.set_physics_process(enabled)
+	player.set_process_input(enabled)
 
 func show_start_screen():
 	score = 0
 	time_left = 20
 	game_active = false
+	paused = false
 	bullet_active = false
 	misses = 0
 	combo_count = 0
@@ -68,13 +89,23 @@ func show_start_screen():
 	ammo = max_ammo
 	is_reloading = false
 
+	game_timer_remaining = 0.0
+	combo_timer_remaining = 0.0
+	reload_timer_remaining = 0.0
+
 	game_timer.stop()
 	combo_timer.stop()
 	reload_timer.stop()
 
+	game_timer.wait_time = game_timer_default_wait
+	combo_timer.wait_time = combo_timer_default_wait
+	reload_timer.wait_time = reload_timer_default_wait
+
 	player.visible = true
 	target.visible = false
 	bullet.visible = false
+
+	set_player_control_enabled(false)
 
 	update_ui()
 	status_label.text = "Başlamak için Enter"
@@ -83,6 +114,7 @@ func start_game():
 	score = 0
 	time_left = 20
 	game_active = true
+	paused = false
 	bullet_active = false
 	misses = 0
 	combo_count = 0
@@ -94,13 +126,23 @@ func start_game():
 	target.scale = target_base_scale
 	hit_tolerance = 70.0
 
+	game_timer_remaining = 0.0
+	combo_timer_remaining = 0.0
+	reload_timer_remaining = 0.0
+
 	game_timer.stop()
 	combo_timer.stop()
 	reload_timer.stop()
 
+	game_timer.wait_time = game_timer_default_wait
+	combo_timer.wait_time = combo_timer_default_wait
+	reload_timer.wait_time = reload_timer_default_wait
+
 	player.visible = true
 	target.visible = true
 	bullet.visible = false
+
+	set_player_control_enabled(true)
 
 	update_ui()
 	status_label.text = "Space ile ateş et"
@@ -113,8 +155,15 @@ func _physics_process(delta):
 		get_tree().change_scene_to_file("res://mini_games_hub.tscn")
 		return
 
+	if Input.is_action_just_pressed("pause_game") and game_active:
+		toggle_pause()
+		return
+
 	if Input.is_action_just_pressed("ui_accept") and not game_active:
 		start_game()
+
+	if paused:
+		return
 
 	if not game_active:
 		return
@@ -123,6 +172,47 @@ func _physics_process(delta):
 	handle_shoot()
 	move_bullet(delta)
 	check_hit()
+
+func toggle_pause():
+	if not game_active:
+		return
+
+	paused = not paused
+
+	if paused:
+		game_timer_remaining = game_timer.time_left
+		game_timer.stop()
+
+		if combo_count > 0 and not combo_timer.is_stopped():
+			combo_timer_remaining = combo_timer.time_left
+			combo_timer.stop()
+		else:
+			combo_timer_remaining = 0.0
+
+		if is_reloading and not reload_timer.is_stopped():
+			reload_timer_remaining = reload_timer.time_left
+			reload_timer.stop()
+		else:
+			reload_timer_remaining = 0.0
+
+		set_player_control_enabled(false)
+		status_label.text = "Duraklatıldı | P ile devam | ESC hub"
+	else:
+		if game_timer_remaining > 0.0:
+			game_timer.start(game_timer_remaining)
+
+		if combo_timer_remaining > 0.0:
+			combo_timer.start(combo_timer_remaining)
+
+		if is_reloading and reload_timer_remaining > 0.0:
+			reload_timer.start(reload_timer_remaining)
+
+		set_player_control_enabled(true)
+
+		if is_reloading:
+			status_label.text = "Şarjör dolduruluyor..."
+		else:
+			status_label.text = "Space ile ateş et"
 
 func handle_shoot():
 	if not Input.is_action_just_pressed("shoot"):
@@ -174,6 +264,7 @@ func move_bullet(delta):
 		if combo_count > 0:
 			combo_count = 0
 			combo_timer.stop()
+			combo_timer.wait_time = combo_timer_default_wait
 			status_label.text = "Kaçırdın! Combo bozuldu"
 		else:
 			status_label.text = "Kaçırdın!"
@@ -207,6 +298,7 @@ func check_hit():
 		status_label.text = "Vurdun! +%d | Combo x%d" % [gained_points, combo_count]
 
 		combo_timer.stop()
+		combo_timer.wait_time = combo_timer_default_wait
 		combo_timer.start()
 
 		reset_bullet()
@@ -271,8 +363,10 @@ func update_ui():
 		ammo_label.text = "Mermi: %d/%d" % [ammo, max_ammo]
 
 func _on_game_timer_timeout():
-	if not game_active:
+	if not game_active or paused:
 		return
+
+	game_timer.wait_time = game_timer_default_wait
 
 	time_left -= 1
 	update_ui()
@@ -281,18 +375,20 @@ func _on_game_timer_timeout():
 		finish_game(true)
 
 func _on_combo_timer_timeout():
+	combo_timer.wait_time = combo_timer_default_wait
 	combo_count = 0
 	update_ui()
 
-	if game_active:
+	if game_active and not paused:
 		status_label.text = "Combo bitti"
 
 func _on_reload_timer_timeout():
+	reload_timer.wait_time = reload_timer_default_wait
 	ammo = max_ammo
 	is_reloading = false
 	update_ui()
 
-	if game_active:
+	if game_active and not paused:
 		if bullet_active:
 			status_label.text = "Şarjör doldu"
 		else:
@@ -300,13 +396,26 @@ func _on_reload_timer_timeout():
 
 func finish_game(won: bool):
 	game_active = false
+	paused = false
+	bullet_active = false
+	is_reloading = false
+
+	game_timer_remaining = 0.0
+	combo_timer_remaining = 0.0
+	reload_timer_remaining = 0.0
+
 	game_timer.stop()
 	combo_timer.stop()
 	reload_timer.stop()
-	bullet_active = false
+
+	game_timer.wait_time = game_timer_default_wait
+	combo_timer.wait_time = combo_timer_default_wait
+	reload_timer.wait_time = reload_timer_default_wait
+
 	bullet.visible = false
 	target.visible = false
-	is_reloading = false
+
+	set_player_control_enabled(false)
 
 	var accuracy := 0
 	if shots_fired > 0:
