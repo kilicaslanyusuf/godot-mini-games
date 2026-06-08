@@ -1,0 +1,53 @@
+[gd_scene format=3 uid="uid://csknltic65soa"]
+
+[ext_resource type="Script" uid="uid://bd5f5ufiyelwq" path="res://records_screen.gd" id="1_w7v44"]
+
+[node name="RecordsScreen" type="Control" unique_id=2033211044]
+layout_mode = 3
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 40.0
+script = ExtResource("1_w7v44")
+
+[node name="TitleLabel" type="Label" parent="." unique_id=1120606699]
+layout_mode = 0
+offset_left = 470.0
+offset_top = 90.0
+offset_right = 530.0
+offset_bottom = 113.0
+text = "Kayıtlar"
+
+[node name="RecordsBox" type="VBoxContainer" parent="." unique_id=1031270509]
+layout_mode = 0
+offset_left = 350.0
+offset_top = 180.0
+offset_right = 618.0
+offset_bottom = 311.0
+
+[node name="CollectorLabel" type="Label" parent="RecordsBox" unique_id=725889577]
+layout_mode = 2
+text = "Collector Rush: 0"
+
+[node name="DodgeLabel" type="Label" parent="RecordsBox" unique_id=1092853959]
+layout_mode = 2
+text = "Dodge Trial: 0 sn"
+
+[node name="TargetLabel" type="Label" parent="RecordsBox" unique_id=1658853908]
+layout_mode = 2
+text = "Target Blaster: 0"
+
+[node name="BrickLabel" type="Label" parent="RecordsBox" unique_id=1443547979]
+layout_mode = 2
+text = "Brick Break Lite: Rekor 0 | Seviye 1"
+
+[node name="LaneLabel" type="Label" parent="RecordsBox" unique_id=1085861633]
+layout_mode = 2
+text = "Lane Dash Lite: 0"
+
+[node name="HintLabel" type="Label" parent="." unique_id=999001814]
+layout_mode = 0
+offset_left = 430.0
+offset_top = 520.0
+offset_right = 562.0
+offset_bottom = 543.0
+text = "ESC ile hub'a dön"
