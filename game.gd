@@ -7,6 +7,13 @@ var best_score := 0
 var save_path := "user://collector_rush_save.save"
 var time_left := 20
 var game_active := false
+var paused := false
+
+var game_timer_remaining := 0.0
+var message_timer_remaining := 0.0
+var game_timer_default_wait := 0.0
+var message_timer_default_wait := 0.0
+var paused_status_backup := ""
 
 var rng := RandomNumberGenerator.new()
 
@@ -24,15 +31,34 @@ var rng := RandomNumberGenerator.new()
 func _ready():
 	rng.randomize()
 	load_best_score()
+	game_timer_default_wait = game_timer.wait_time
+	message_timer_default_wait = message_timer.wait_time
 	show_start_screen()
+
+func set_player_control_enabled(enabled: bool):
+	player.set_process(enabled)
+	player.set_physics_process(enabled)
+	player.set_process_input(enabled)
 
 func show_start_screen():
 	score = 0
 	time_left = 20
 	game_active = false
+	paused = false
+	new_record_this_run = false
+
+	game_timer_remaining = 0.0
+	message_timer_remaining = 0.0
+	paused_status_backup = ""
+
 	game_timer.stop()
 	message_timer.stop()
+
+	game_timer.wait_time = game_timer_default_wait
+	message_timer.wait_time = message_timer_default_wait
+
 	set_world_visible(false)
+	set_player_control_enabled(false)
 	update_ui()
 	status_label.text = "Collector Rush\nBaşlamak için Enter"
 
@@ -40,8 +66,21 @@ func start_new_game():
 	score = 0
 	time_left = 20
 	game_active = true
+	paused = false
 	new_record_this_run = false
+
+	game_timer_remaining = 0.0
+	message_timer_remaining = 0.0
+	paused_status_backup = ""
+
+	game_timer.stop()
+	message_timer.stop()
+
+	game_timer.wait_time = game_timer_default_wait
+	message_timer.wait_time = message_timer_default_wait
+
 	set_world_visible(true)
+	set_player_control_enabled(true)
 
 	move_collectible([])
 	move_hazard([collectible.global_position])
@@ -61,6 +100,14 @@ func _physics_process(_delta):
 	if Input.is_action_just_pressed("ui_cancel"):
 		get_tree().change_scene_to_file("res://mini_games_hub.tscn")
 		return
+
+	if Input.is_action_just_pressed("pause_game") and game_active:
+		toggle_pause()
+		return
+
+	if paused:
+		return
+
 	if game_active:
 		check_collect()
 		check_hazard()
@@ -68,6 +115,38 @@ func _physics_process(_delta):
 
 	if Input.is_action_just_pressed("ui_accept") and not game_active:
 		start_new_game()
+
+func toggle_pause():
+	if not game_active:
+		return
+
+	paused = not paused
+
+	if paused:
+		game_timer_remaining = game_timer.time_left
+		game_timer.stop()
+
+		if not message_timer.is_stopped():
+			message_timer_remaining = message_timer.time_left
+			paused_status_backup = status_label.text
+			message_timer.stop()
+		else:
+			message_timer_remaining = 0.0
+			paused_status_backup = ""
+
+		set_player_control_enabled(false)
+		status_label.text = "Duraklatıldı | P ile devam | ESC hub"
+	else:
+		if game_timer_remaining > 0.0:
+			game_timer.start(game_timer_remaining)
+
+		set_player_control_enabled(true)
+
+		if message_timer_remaining > 0.0 and paused_status_backup != "":
+			status_label.text = paused_status_backup
+			message_timer.start(message_timer_remaining)
+		else:
+			set_default_status()
 
 func update_ui():
 	score_label.text = "Skor: %d" % score
@@ -83,6 +162,7 @@ func show_temp_status(text: String):
 	message_timer.start()
 
 func _on_message_timer_timeout():
+	message_timer.wait_time = message_timer_default_wait
 	set_default_status()
 
 func get_safe_random_position(excluded_positions: Array, min_distance: float) -> Vector2:
@@ -156,15 +236,17 @@ func check_bonus():
 		move_bonus([collectible.global_position, hazard.global_position])
 
 func _on_game_timer_timeout():
-	if not game_active:
+	if not game_active or paused:
 		return
+
+	game_timer.wait_time = game_timer_default_wait
 
 	time_left -= 1
 	update_ui()
 
 	if time_left <= 0:
 		finish_game()
-		
+
 func get_grade_text() -> String:
 	if score <= 4:
 		return "Zayıf"
@@ -173,12 +255,22 @@ func get_grade_text() -> String:
 	elif score <= 14:
 		return "İyi"
 	else:
-		return "Çok iyi"		
+		return "Çok iyi"
 
 func finish_game():
 	game_active = false
+	paused = false
+	game_timer_remaining = 0.0
+	message_timer_remaining = 0.0
+	paused_status_backup = ""
+
 	game_timer.stop()
 	message_timer.stop()
+
+	game_timer.wait_time = game_timer_default_wait
+	message_timer.wait_time = message_timer_default_wait
+
+	set_player_control_enabled(false)
 	set_world_visible(true)
 
 	var result_text = "Bitti. Skor: %d | En iyi: %d | Derece: %s" % [score, best_score, get_grade_text()]
