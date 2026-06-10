@@ -6,6 +6,7 @@ extends Control
 @onready var brick_button = $ButtonColumn/BrickButton
 @onready var lane_button = $ButtonColumn/LaneButton
 @onready var records_button = $ButtonColumn/RecordsButton
+@onready var achievements_button = $ButtonColumn/AchievementsButton
 @onready var quit_button = $ButtonColumn/QuitButton
 
 @onready var info_label = $InfoLabel
@@ -19,6 +20,7 @@ func _ready():
 	brick_button.pressed.connect(_open_brick)
 	lane_button.pressed.connect(_open_lane)
 	records_button.pressed.connect(_open_records)
+	achievements_button.pressed.connect(_open_achievements)
 	quit_button.pressed.connect(_quit_game)
 
 	collector_button.mouse_entered.connect(func(): show_game_info("collector"))
@@ -27,6 +29,7 @@ func _ready():
 	brick_button.mouse_entered.connect(func(): show_game_info("brick"))
 	lane_button.mouse_entered.connect(func(): show_game_info("lane"))
 	records_button.mouse_entered.connect(func(): show_game_info("records"))
+	achievements_button.mouse_entered.connect(func(): show_game_info("achievements"))
 	quit_button.mouse_entered.connect(func(): show_game_info("quit"))
 
 	collector_button.focus_entered.connect(func(): show_game_info("collector"))
@@ -35,6 +38,7 @@ func _ready():
 	brick_button.focus_entered.connect(func(): show_game_info("brick"))
 	lane_button.focus_entered.connect(func(): show_game_info("lane"))
 	records_button.focus_entered.connect(func(): show_game_info("records"))
+	achievements_button.focus_entered.connect(func(): show_game_info("achievements"))
 	quit_button.focus_entered.connect(func(): show_game_info("quit"))
 
 	apply_last_game_focus()
@@ -95,6 +99,11 @@ func show_game_info(game_name: String):
 			records_label.text = "Skorlar ve en iyi seviyeler listelenir."
 			controls_label.text = "Kontrol: Enter/tıkla | ESC hub"
 
+		"achievements":
+			info_label.text = "Başarımları gör ve hangi hedefleri açtığını takip et."
+			records_label.text = "Kilitli ve açılmış başarımlar burada listelenir."
+			controls_label.text = "Kontrol: Enter/tıkla | ESC hub"
+
 		"quit":
 			info_label.text = "Oyundan çık."
 			records_label.text = "Paket kapanır."
@@ -138,6 +147,9 @@ func _open_lane():
 
 func _open_records():
 	get_tree().change_scene_to_file("res://records_screen.tscn")
+
+func _open_achievements():
+	get_tree().change_scene_to_file("res://achievements_screen.tscn")
 
 func _quit_game():
 	get_tree().quit()

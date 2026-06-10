@@ -1,0 +1,58 @@
+[gd_scene format=3 uid="uid://b64w0qgqh5ss6"]
+
+[ext_resource type="Script" uid="uid://5g3ahn4loe52" path="res://achievements_screen.gd" id="1_mtdwf"]
+
+[node name="AchievementsScreen" type="Control" unique_id=59323144]
+layout_mode = 3
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 40.0
+script = ExtResource("1_mtdwf")
+
+[node name="TitleLabel" type="Label" parent="." unique_id=1132227552]
+layout_mode = 0
+offset_left = 450.0
+offset_top = 90.0
+offset_right = 535.0
+offset_bottom = 139.0
+text = "Başarımlar
+"
+
+[node name="AchievementsBox" type="VBoxContainer" parent="." unique_id=554477187]
+layout_mode = 0
+offset_left = 340.0
+offset_top = 180.0
+offset_right = 514.0
+offset_bottom = 338.0
+
+[node name="FirstStepLabel" type="Label" parent="AchievementsBox" unique_id=1396987832]
+layout_mode = 2
+text = "İlk Adım: Kilitli"
+
+[node name="CollectorLabel" type="Label" parent="AchievementsBox" unique_id=938721800]
+layout_mode = 2
+text = "Collector Rookie: Kilitli"
+
+[node name="SurvivorLabel" type="Label" parent="AchievementsBox" unique_id=1568304573]
+layout_mode = 2
+text = "Survivor: Kilitli"
+
+[node name="SharpShooterLabel" type="Label" parent="AchievementsBox" unique_id=1695347615]
+layout_mode = 2
+text = "Sharp Shooter: Kilitli"
+
+[node name="BrickMasterLabel" type="Label" parent="AchievementsBox" unique_id=532888515]
+layout_mode = 2
+text = "Brick Master: Kilitli"
+
+[node name="LaneRunnerLabel" type="Label" parent="AchievementsBox" unique_id=1726299422]
+layout_mode = 2
+text = "Lane Runner: Kilitli"
+
+[node name="HintLabel" type="Label" parent="." unique_id=173995082]
+layout_mode = 0
+offset_left = 430.0
+offset_top = 540.0
+offset_right = 562.0
+offset_bottom = 563.0
+text = "ESC ile hub'a dön"
