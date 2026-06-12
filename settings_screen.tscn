@@ -1,0 +1,67 @@
+[gd_scene format=3 uid="uid://cdh7834hqmq4x"]
+
+[ext_resource type="Script" uid="uid://f13whkw34y7l" path="res://settings_screen.gd" id="1_00yke"]
+
+[node name="SettingsScreen" type="Control" unique_id=907091474]
+layout_mode = 3
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 40.0
+script = ExtResource("1_00yke")
+
+[node name="TitleLabel" type="Label" parent="." unique_id=2075884743]
+layout_mode = 0
+offset_left = 470.0
+offset_top = 90.0
+offset_right = 526.0
+offset_bottom = 113.0
+text = "Ayarlar"
+
+[node name="SettingsBox" type="VBoxContainer" parent="." unique_id=423642008]
+layout_mode = 0
+offset_left = 310.0
+offset_top = 220.0
+offset_right = 514.0
+offset_bottom = 286.0
+
+[node name="FullscreenRow" type="HBoxContainer" parent="SettingsBox" unique_id=1959796632]
+layout_mode = 2
+
+[node name="FullscreenTextLabel" type="Label" parent="SettingsBox/FullscreenRow" unique_id=1597659346]
+layout_mode = 2
+text = "Fullscreen"
+
+[node name="FullscreenValueLabel" type="Label" parent="SettingsBox/FullscreenRow" unique_id=505815785]
+layout_mode = 2
+text = "Kapalı"
+
+[node name="FullscreenToggleButton" type="Button" parent="SettingsBox/FullscreenRow" unique_id=135302557]
+layout_mode = 2
+text = "Değiştir"
+
+[node name="VolumeRow" type="HBoxContainer" parent="SettingsBox" unique_id=558871564]
+layout_mode = 2
+
+[node name="VolumeTextLabel" type="Label" parent="SettingsBox/VolumeRow" unique_id=179201703]
+layout_mode = 2
+text = "Master Volume"
+
+[node name="VolumeValueLabel" type="Label" parent="SettingsBox/VolumeRow" unique_id=1945026412]
+layout_mode = 2
+text = "100%"
+
+[node name="VolumeDownButton" type="Button" parent="SettingsBox/VolumeRow" unique_id=2054120350]
+layout_mode = 2
+text = "-"
+
+[node name="VolumeUpButton" type="Button" parent="SettingsBox/VolumeRow" unique_id=2037933029]
+layout_mode = 2
+text = "+"
+
+[node name="HintLabel" type="Label" parent="." unique_id=1908972205]
+layout_mode = 0
+offset_left = 430.0
+offset_top = 540.0
+offset_right = 562.0
+offset_bottom = 563.0
+text = "ESC ile hub'a dön"

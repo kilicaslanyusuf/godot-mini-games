@@ -52,6 +52,11 @@ text = "Records"
 layout_mode = 2
 text = "Achievements"
 
+[node name="SettingsButton" type="Button" parent="ButtonColumn" unique_id=905599621]
+layout_mode = 2
+text = "Settings
+"
+
 [node name="QuitButton" type="Button" parent="ButtonColumn" unique_id=426651287]
 layout_mode = 2
 text = "Çıkış"
