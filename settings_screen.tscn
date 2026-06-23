@@ -24,6 +24,17 @@ offset_top = 220.0
 offset_right = 514.0
 offset_bottom = 286.0
 
+[node name="ResetRow" type="HBoxContainer" parent="SettingsBox" unique_id=850217253]
+layout_mode = 2
+
+[node name="ResetTextLabel" type="Label" parent="SettingsBox/ResetRow" unique_id=697373141]
+layout_mode = 2
+text = "İlerlemeyi Sıfırla"
+
+[node name="ResetButton" type="Button" parent="SettingsBox/ResetRow" unique_id=345806714]
+layout_mode = 2
+text = "Sıfırla"
+
 [node name="FullscreenRow" type="HBoxContainer" parent="SettingsBox" unique_id=1959796632]
 layout_mode = 2
 
@@ -65,3 +76,10 @@ offset_top = 540.0
 offset_right = 562.0
 offset_bottom = 563.0
 text = "ESC ile hub'a dön"
+
+[node name="ResetStatusLabel" type="Label" parent="." unique_id=1884756347]
+layout_mode = 0
+offset_left = 330.0
+offset_top = 430.0
+offset_right = 370.0
+offset_bottom = 453.0
