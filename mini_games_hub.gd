@@ -109,8 +109,8 @@ func show_game_info(game_name: String):
 			controls_label.text = "Kontrol: Enter/tıkla | ESC hub"
 
 		"settings":
-			info_label.text = "Ekran ve ses ayarlarını buradan değiştir."
-			records_label.text = "Fullscreen ve master volume anında uygulanır."
+			info_label.text = "Ses ve ilerleme ayarlarını buradan yönet."
+			records_label.text = "Master volume ve ilerleme sıfırlama burada."
 			controls_label.text = "Kontrol: Enter/tıkla | ESC hub"
 
 		"quit":

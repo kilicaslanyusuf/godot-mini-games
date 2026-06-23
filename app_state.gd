@@ -34,10 +34,29 @@ func apply_settings():
 	apply_audio_settings()
 
 func apply_display_settings():
+	var window = get_window()
+	if window == null:
+		return
+
+	var screen = DisplayServer.window_get_current_screen()
+	var screen_pos = DisplayServer.screen_get_position(screen)
+	var screen_size = DisplayServer.screen_get_size(screen)
+
 	if fullscreen_enabled:
-		DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_FULLSCREEN)
+		window.mode = Window.MODE_WINDOWED
+		window.borderless = true
+		window.position = screen_pos
+		window.size = screen_size
 	else:
-		DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_WINDOWED)
+		window.borderless = false
+		window.mode = Window.MODE_WINDOWED
+
+		var windowed_size = Vector2i(1152, 648)
+		window.size = windowed_size
+		window.position = Vector2i(
+			screen_pos.x + int((screen_size.x - windowed_size.x) / 2),
+			screen_pos.y + int((screen_size.y - windowed_size.y) / 2)
+		)
 
 func apply_audio_settings():
 	var bus_index = AudioServer.get_bus_index("Master")
