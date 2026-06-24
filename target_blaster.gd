@@ -40,6 +40,11 @@ var game_timer_default_wait := 0.0
 var combo_timer_default_wait := 0.0
 var reload_timer_default_wait := 0.0
 
+var golden_target_active := false
+var golden_spawn_score_threshold := 10
+var golden_spawn_chance := 60
+var golden_bonus_points := 3
+
 @onready var score_label = $CanvasLayer/UIBox/ScoreLabel
 @onready var best_score_label = $CanvasLayer/UIBox/BestScoreLabel
 @onready var time_label = $CanvasLayer/UIBox/TimeLabel
@@ -57,6 +62,7 @@ var reload_timer_default_wait := 0.0
 @onready var reload_timer = $ReloadTimer
 @onready var shots_label = $CanvasLayer/UIBox/ShotsLabel
 @onready var accuracy_label = $CanvasLayer/UIBox/AccuracyLabel
+@onready var target_sprite = $Target/Sprite2D
 
 func _ready():
 	rng.randomize()
@@ -88,6 +94,9 @@ func show_start_screen():
 	hits_landed = 0
 	ammo = max_ammo
 	is_reloading = false
+	golden_target_active = false
+	
+	target_sprite.modulate = Color(1, 1, 1, 1)
 
 	game_timer_remaining = 0.0
 	combo_timer_remaining = 0.0
@@ -104,6 +113,7 @@ func show_start_screen():
 	player.visible = true
 	target.visible = false
 	bullet.visible = false
+	target.modulate = Color(1, 1, 1, 1)
 
 	set_player_control_enabled(false)
 
@@ -122,6 +132,7 @@ func start_game():
 	hits_landed = 0
 	ammo = max_ammo
 	is_reloading = false
+	golden_target_active = false
 	target_speed = base_target_speed
 	target.scale = target_base_scale
 	hit_tolerance = 70.0
@@ -141,6 +152,8 @@ func start_game():
 	player.visible = true
 	target.visible = true
 	bullet.visible = false
+	target.modulate = Color(1, 1, 1, 1)
+	target_sprite.modulate = Color(1, 1, 1, 1)
 
 	set_player_control_enabled(true)
 
@@ -285,6 +298,13 @@ func check_hit():
 		combo_count += 1
 		var gained_points = combo_count
 
+		if golden_target_active:
+			gained_points += golden_bonus_points
+			ammo = max_ammo
+			is_reloading = false
+			reload_timer.stop()
+			reload_timer.wait_time = reload_timer_default_wait
+
 		score += gained_points
 		hits_landed += 1
 		target_speed = min(target_speed + speed_step, max_target_speed)
@@ -295,7 +315,11 @@ func check_hit():
 			save_best_score()
 
 		update_ui()
-		status_label.text = "Vurdun! +%d | Combo x%d" % [gained_points, combo_count]
+
+		if golden_target_active:
+			status_label.text = "Altın hedef! +%d | Cephane doldu | Combo x%d" % [gained_points, combo_count]
+		else:
+			status_label.text = "Vurdun! +%d | Combo x%d" % [gained_points, combo_count]
 
 		combo_timer.stop()
 		combo_timer.wait_time = combo_timer_default_wait
@@ -311,6 +335,26 @@ func update_target_difficulty():
 	var new_scale_y = max(target_min_scale.y, target_base_scale.y - shrink_steps * 0.08)
 
 	target.scale = Vector2(new_scale_x, new_scale_y)
+
+	if golden_target_active:
+		target.scale *= 1.12
+
+	hit_tolerance = max(35.0, 70.0 - shrink_steps * 5.0)
+
+func update_target_visual():
+	var shrink_steps = int(score / 5)
+
+	var new_scale_x = max(target_min_scale.x, target_base_scale.x - shrink_steps * 0.08)
+	var new_scale_y = max(target_min_scale.y, target_base_scale.y - shrink_steps * 0.08)
+
+	target.scale = Vector2(new_scale_x, new_scale_y)
+
+	if golden_target_active:
+		target_sprite.modulate = Color(1.0, 0.82, 0.05, 1.0)
+		target.scale *= 1.18
+	else:
+		target_sprite.modulate = Color(1, 1, 1, 1)
+
 	hit_tolerance = max(35.0, 70.0 - shrink_steps * 5.0)
 
 func move_target():
@@ -325,6 +369,15 @@ func move_target():
 		target_direction = -1.0
 	else:
 		target_direction = 1.0
+
+		if score >= golden_spawn_score_threshold and rng.randi_range(1, 100) <= golden_spawn_chance:
+			golden_target_active = true
+			status_label.text = "Altın hedef çıktı!"
+		else:
+			golden_target_active = false
+
+	update_target_difficulty()
+	update_target_visual()
 
 func move_target_sideways(delta):
 	var size = get_viewport_rect().size
@@ -399,6 +452,7 @@ func finish_game(won: bool):
 	paused = false
 	bullet_active = false
 	is_reloading = false
+	golden_target_active = false
 
 	game_timer_remaining = 0.0
 	combo_timer_remaining = 0.0
@@ -414,6 +468,8 @@ func finish_game(won: bool):
 
 	bullet.visible = false
 	target.visible = false
+	target.modulate = Color(1, 1, 1, 1)
+	target_sprite.modulate = Color(1, 1, 1, 1)
 
 	set_player_control_enabled(false)
 
