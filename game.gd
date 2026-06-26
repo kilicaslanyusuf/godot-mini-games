@@ -9,10 +9,16 @@ var time_left := 20
 var game_active := false
 var paused := false
 
+var streak_count := 0
+
 var game_timer_remaining := 0.0
 var message_timer_remaining := 0.0
+var streak_timer_remaining := 0.0
+
 var game_timer_default_wait := 0.0
 var message_timer_default_wait := 0.0
+var streak_timer_default_wait := 0.0
+
 var paused_status_backup := ""
 
 var rng := RandomNumberGenerator.new()
@@ -20,19 +26,25 @@ var rng := RandomNumberGenerator.new()
 @onready var score_label = $CanvasLayer/UIBox/ScoreLabel
 @onready var best_score_label = $CanvasLayer/UIBox/BestScoreLabel
 @onready var time_label = $CanvasLayer/UIBox/TimeLabel
+@onready var streak_label = $CanvasLayer/UIBox/StreakLabel
 @onready var status_label = $CanvasLayer/UIBox/StatusLabel
+
 @onready var player = $Player
 @onready var collectible = $Collectible
 @onready var hazard = $Hazard
 @onready var bonus = $Bonus
+
 @onready var game_timer = $GameTimer
 @onready var message_timer = $MessageTimer
+@onready var streak_timer = $StreakTimer
 
 func _ready():
 	rng.randomize()
 	load_best_score()
 	game_timer_default_wait = game_timer.wait_time
 	message_timer_default_wait = message_timer.wait_time
+	streak_timer_default_wait = streak_timer.wait_time
+	streak_timer.timeout.connect(_on_streak_timer_timeout)
 	show_start_screen()
 
 func set_player_control_enabled(enabled: bool):
@@ -46,16 +58,20 @@ func show_start_screen():
 	game_active = false
 	paused = false
 	new_record_this_run = false
+	streak_count = 0
 
 	game_timer_remaining = 0.0
 	message_timer_remaining = 0.0
+	streak_timer_remaining = 0.0
 	paused_status_backup = ""
 
 	game_timer.stop()
 	message_timer.stop()
+	streak_timer.stop()
 
 	game_timer.wait_time = game_timer_default_wait
 	message_timer.wait_time = message_timer_default_wait
+	streak_timer.wait_time = streak_timer_default_wait
 
 	set_world_visible(false)
 	set_player_control_enabled(false)
@@ -68,16 +84,20 @@ func start_new_game():
 	game_active = true
 	paused = false
 	new_record_this_run = false
+	streak_count = 0
 
 	game_timer_remaining = 0.0
 	message_timer_remaining = 0.0
+	streak_timer_remaining = 0.0
 	paused_status_backup = ""
 
 	game_timer.stop()
 	message_timer.stop()
+	streak_timer.stop()
 
 	game_timer.wait_time = game_timer_default_wait
 	message_timer.wait_time = message_timer_default_wait
+	streak_timer.wait_time = streak_timer_default_wait
 
 	set_world_visible(true)
 	set_player_control_enabled(true)
@@ -123,16 +143,22 @@ func toggle_pause():
 	paused = not paused
 
 	if paused:
+		paused_status_backup = status_label.text
+
 		game_timer_remaining = game_timer.time_left
 		game_timer.stop()
 
 		if not message_timer.is_stopped():
 			message_timer_remaining = message_timer.time_left
-			paused_status_backup = status_label.text
 			message_timer.stop()
 		else:
 			message_timer_remaining = 0.0
-			paused_status_backup = ""
+
+		if not streak_timer.is_stopped():
+			streak_timer_remaining = streak_timer.time_left
+			streak_timer.stop()
+		else:
+			streak_timer_remaining = 0.0
 
 		set_player_control_enabled(false)
 		status_label.text = "Duraklatıldı | P ile devam | ESC hub"
@@ -140,11 +166,16 @@ func toggle_pause():
 		if game_timer_remaining > 0.0:
 			game_timer.start(game_timer_remaining)
 
+		if message_timer_remaining > 0.0:
+			message_timer.start(message_timer_remaining)
+
+		if streak_timer_remaining > 0.0:
+			streak_timer.start(streak_timer_remaining)
+
 		set_player_control_enabled(true)
 
-		if message_timer_remaining > 0.0 and paused_status_backup != "":
+		if paused_status_backup != "":
 			status_label.text = paused_status_backup
-			message_timer.start(message_timer_remaining)
 		else:
 			set_default_status()
 
@@ -152,6 +183,7 @@ func update_ui():
 	score_label.text = "Skor: %d" % score
 	best_score_label.text = "En iyi skor: %d" % best_score
 	time_label.text = "Süre: %d" % time_left
+	streak_label.text = "Streak: x%d" % streak_count
 
 func set_default_status():
 	if game_active:
@@ -159,6 +191,8 @@ func set_default_status():
 
 func show_temp_status(text: String):
 	status_label.text = text
+	message_timer.stop()
+	message_timer.wait_time = message_timer_default_wait
 	message_timer.start()
 
 func _on_message_timer_timeout():
@@ -197,15 +231,21 @@ func move_bonus(excluded_positions: Array = []):
 
 func check_collect():
 	if player.global_position.distance_to(collectible.global_position) < 25:
-		score += 1
+		streak_count += 1
+		var gained_points = streak_count
+		score += gained_points
 
 		if score > best_score:
 			best_score = score
 			save_best_score()
 			new_record_this_run = true
 
+		streak_timer.stop()
+		streak_timer.wait_time = streak_timer_default_wait
+		streak_timer.start()
+
 		update_ui()
-		show_temp_status("Topladın!")
+		show_temp_status("Topladın! +%d | Streak x%d" % [gained_points, streak_count])
 		move_collectible([hazard.global_position, bonus.global_position])
 
 func check_hazard():
@@ -235,6 +275,14 @@ func check_bonus():
 		update_ui()
 		move_bonus([collectible.global_position, hazard.global_position])
 
+func _on_streak_timer_timeout():
+	streak_timer.wait_time = streak_timer_default_wait
+	streak_count = 0
+	update_ui()
+
+	if game_active and not paused:
+		status_label.text = "Streak bitti"
+
 func _on_game_timer_timeout():
 	if not game_active or paused:
 		return
@@ -260,18 +308,24 @@ func get_grade_text() -> String:
 func finish_game():
 	game_active = false
 	paused = false
+	streak_count = 0
+
 	game_timer_remaining = 0.0
 	message_timer_remaining = 0.0
+	streak_timer_remaining = 0.0
 	paused_status_backup = ""
 
 	game_timer.stop()
 	message_timer.stop()
+	streak_timer.stop()
 
 	game_timer.wait_time = game_timer_default_wait
 	message_timer.wait_time = message_timer_default_wait
+	streak_timer.wait_time = streak_timer_default_wait
 
 	set_player_control_enabled(false)
 	set_world_visible(true)
+	update_ui()
 
 	var result_text = "Bitti. Skor: %d | En iyi: %d | Derece: %s" % [score, best_score, get_grade_text()]
 

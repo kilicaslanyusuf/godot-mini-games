@@ -39,6 +39,10 @@ text = "En İyi Skor: 0"
 layout_mode = 2
 text = "Süre: 20"
 
+[node name="StreakLabel" type="Label" parent="CanvasLayer/UIBox" unique_id=664305483]
+layout_mode = 2
+text = "Streak: x0"
+
 [node name="StatusLabel" type="Label" parent="CanvasLayer/UIBox" unique_id=1597379407]
 layout_mode = 2
 text = "Topla!"
@@ -47,6 +51,10 @@ text = "Topla!"
 
 [node name="MessageTimer" type="Timer" parent="." unique_id=1531941421]
 wait_time = 0.8
+one_shot = true
+
+[node name="StreakTimer" type="Timer" parent="." unique_id=852093747]
+wait_time = 2.0
 one_shot = true
 
 [node name="Player" type="CharacterBody2D" parent="." unique_id=86132533]
